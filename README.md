@@ -51,6 +51,10 @@ A Program Counter (PC) tracks the current instruction, and a Stack Pointer (SP) 
 
 Stack overflows or underflows cause immediate program termination.
 
+Unless otherwise specified, all arithmetic is performed using 16-bit signed integers with wraparound on overflow.
+
+Boolean values are represented as 0 (false) and 1 (true).
+
 The VM is extensible via modules.  Each module globally reserves 4 opcodes in the opcode space for performing calls with varying numbers of arguments.  All arguments are 16-bit values whose interpretation is module-specific.
 
 For example, a module named LED causes 4 opcodes to be reserved:
@@ -79,7 +83,8 @@ Compiles to:
 Commands use the following notation:
 <OPCODE> [ARGUMENTS]
 Where:
- - `n` = 16-bit signed integer constant
+ - `u8` = 8-bit unsigned integer constant
+ - `i16` = 16-bit signed integer constant
    `a` = 16-bit constant unsigned address in entire memory space
  - `addr` = 16-bit signed integer, relative address offset in program space (relative to the next instruction: PC + 1)
  - `c` = 8-bit Module function code
@@ -92,11 +97,11 @@ Comment conventions:
 
 |  # | OP Spec     | Mini pseudocode                | Description                    |
 | -: | ----------- | ------------------------------ | ------------------------------ |
-|  1 | PUSH n      | `push(n)`                      | Push constant value            |
+|  1 | PUSH i16    | `push(i16)`                    | Push constant value            |
 |  2 | LOAD a      | `push(mem[a])`                 | Push value from memory         |
 |  3 | STORE a     | `mem[a] = pop()`               | Store top of stack into memory |
 |  4 | POP         | `pop()`/`sp -= 1`              | Discard top value              |
-|  5 | POPN n      | `pop(n)`/`sp -= n`             | Discard n values               |
+|  5 | POPN u8     | `pop(u8)`/`sp -= u8`           | Discard u8 values             |
 |  6 | DUP         | `push(s[0])`                   | Duplicate top of stack         |
 |  7 | SWAP        | `swap(s[0], s[1])`             | Swap top two values            |
 |  8 | OVER        | `push(s[1])`                   | Copy second value to top       |
@@ -115,27 +120,29 @@ Comment conventions:
 | 21 | GE          | `push(s[1] >= s[0])`           | Greater or equal               |
 | 22 | AND         | `push(s[1] & s[0])`            | Bitwise AND                    |
 | 23 | OR          | `push(s[1] | s[0])`            | Bitwise OR                     |
-| 24 | NOT         | `push(!s[0])`                  | Logical NOT                    |
-| 25 | INC         | `push(s[0] + 1)`               | Increment                      |
-| 26 | DEC         | `push(s[0] - 1)`               | Decrement                      |
-| 27 | NEG         | `push(-s[0])`                  | Negate                         |
-| 28 | ABS         | `push(abs(s[0]))`              | Absolute value                 |
-| 29 | JMP addr    | `pc += addr`                   | Unconditional jump (relative)  |
-| 30 | JZ addr     | `if(s[0]==0) pc+=addr`         | Jump if zero                   |
-| 31 | JNZ addr    | `if(s[0]!=0) pc+=addr`         | Jump if non-zero               |
-| 32 | CALL addr   | `push(ret); pc+=addr`          | Call subroutine                |
-| 33 | CALLZ addr  | `if(s[0]==0) call`             | Conditional call if zero       |
-| 34 | CALLNZ addr | `if(s[0]!=0) call`             | Conditional call if non-zero   |
-| 35 | RET         | `pc = pop()`                   | Return from subroutine         |
-| 36 | HALT        | `stop`                         | Stop execution                 |
-| 37 | SLEEP       | `delay(pop())`                 | Sleep for s[0] microseconds    |
+| 24 | XOR         | `push(s[1] ^ s[0])`            | Bitwise XOR                    |
+| 25 | NOT         | `push(!s[0])`                  | Logical NOT                    |
+| 26 | INC         | `push(s[0] + 1)`               | Increment                      |
+| 27 | DEC         | `push(s[0] - 1)`               | Decrement                      |
+| 28 | NEG         | `push(-s[0])`                  | Negate                         |
+| 29 | ABS         | `push(abs(s[0]))`              | Absolute value                 |
+| 30 | CLAMP       | `push(min(max(s[2], s[1]), s[0]))` | Clamp value between s[1] and s[0] |
+| 31 | JMP addr    | `pc += addr`                   | Unconditional jump (relative)  |
+| 32 | JZ addr     | `if(s[0]==0) pc+=addr`         | Jump if zero                   |
+| 33 | JNZ addr    | `if(s[0]!=0) pc+=addr`         | Jump if non-zero               |
+| 34 | CALL addr   | `push(ret); pc+=addr`          | Call subroutine                |
+| 35 | CALLZ addr  | `if(s[0]==0) call`             | Conditional call if zero       |
+| 36 | CALLNZ addr | `if(s[0]!=0) call`             | Conditional call if non-zero   |
+| 37 | RET         | `pc = pop()`                   | Return from subroutine         |
+| 38 | HALT        | `stop`                         | Stop execution                 |
+| 39 | SLEEP       | `delay(pop())`                 | Sleep for s[0] microseconds    |
 | -- | ----------- | ------------------------------ | ------------------------------ |
 |    | LED MODULE                                                                    |
 | -- | ----------- | ------------------------------ | ------------------------------ |
 | 64 | LED0 c      | `led(c)`                       | LED call with 0 args           |
 | 65 | LED1 c      | `led(c,pop())`                 | LED call with 1 arg            |
 | 66 | LED2 c      | `led(c,pop(),pop())`           | LED call with 2 args           |
-| 67 | LEDN n c    | `led(c,pop(), ...n)`           | LED call with n args (safe)    |
+| 67 | LEDN u8 c   | `led(c,pop(), ...u8)`          | LED call with u8 args (safe)   |
 
 
 ## Pixelscript
@@ -185,3 +192,17 @@ end
 * No dynamic code loading (`load`, `dofile`, `eval`)
 * No metatables or operator overloading
 * No reflection / introspection APIs
+
+## Program Structure
+
+RPLed bytecode programs have a simple header followed by the program instructions and data.
+
+| Offset | Size  | Description                          |
+| ------ | ----- | ------------------------------------ |
+| 0      | 3     | PXS                                  |
+| 3      | 1     | Version (currently 0)                |
+| 4      | 2     | Heap size                            |
+| 6      | 1     | Remaining Header Length              |
+| 7      | 1     | Number of modules (n_mod)            |
+| 8      | n_mod | [Module id, ...]                     |
+| 8+n_mod| to header_length | Program name (null-terminated string) |
