@@ -1,0 +1,16 @@
+[package]
+name = "rpled-vm"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bytemuck = { version = "1.24.0", features=["derive"] }
+bitflags = { version = "2.10.0", default-features = false, features = ["bytemuck"] }
+embassy-sync = { version = "*", optional = true }
+
+[features]
+default = ["led", "tokio"]
+led = []
+embassy = ["embassy-sync"]
+tokio = ["tokio"]
+# fp = []
