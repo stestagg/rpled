@@ -1,4 +1,3 @@
-use paste::paste;
 
 macro_rules! define_module {
     (
@@ -36,6 +35,7 @@ macro_rules! define_module {
                 }
             }
 
+            #[allow(unused_variables)]
             pub(crate) async fn call1<const N: usize, S: crate::sync::Sync, D: crate::vm::VmDebug>(
                 $vm_ident: &mut crate::vm::VM<N, S, D>,
                 opcode: u8
@@ -48,6 +48,7 @@ macro_rules! define_module {
                 }
             }
 
+            #[allow(unused_variables)]
             pub(crate) async fn call2<const N: usize, S: crate::sync::Sync, D: crate::vm::VmDebug>(
                 $vm_ident: &mut crate::vm::VM<N, S, D>,
                 opcode: u8
@@ -60,6 +61,7 @@ macro_rules! define_module {
                 }
             }
 
+            #[allow(unused_variables)]
             pub(crate) async fn calln<const N: usize, S: crate::sync::Sync, D: crate::vm::VmDebug>(
                 $vm_ident: &mut crate::vm::VM<N, S, D>,
                 opcode: u8
@@ -86,6 +88,7 @@ macro_rules! define_module {
     };
 
     (@fn_impl $name:ident, ( &mut $vm_name:ident $(, $arg:ident : $arg_ty:ty )* ) $body:block) => {
+        #[allow(unused_variables)]
         pub async fn $name<const N: usize, S: crate::sync::Sync, D: crate::vm::VmDebug>(
             $vm_name: &mut crate::vm::VM<N, S, D>,
             $( $arg : $arg_ty ),*
@@ -100,13 +103,13 @@ macro_rules! define_module {
         }
     };
 
-    (@call0 $vm_ident:ident, $name:ident, (&mut  $vm_name:ident , $( $arg:ident : $arg_ty:ty ),+ ) ) => {
+    (@call0 $_vm_ident:ident, $_name:ident, (&mut  $_vm_name:ident , $( $_arg:ident : $_arg_ty:ty ),+ ) ) => {
         {
             return Err(crate::modules::ModuleError::IncorrectCallVariant.into());
         }
     };
 
-    (@calln $vm_ident:ident, $num:expr, $name:ident, (&mut $vm_name:ident ) ) => {
+    (@calln $_vm_ident:ident, $_num:expr, $_name:ident, (&mut $_vm_name:ident ) ) => {
         {
             return Err(crate::modules::ModuleError::IncorrectCallVariant.into());
         }

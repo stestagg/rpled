@@ -283,7 +283,7 @@ impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
             self.pc = 0;
             return Err(VMError::PCOverflow(pc_u16));
         }
-        Ok(pod_read_unaligned::<T>(&self.memory[start.into()..(self.pc).into()]).clone())
+        Ok(pod_read_unaligned::<T>(&self.memory[start..(self.pc)]))
     }
 
     pub fn alloc_stack_space<T>(&mut self) -> Result<&mut [u8; size_of::<T>()]> {
@@ -293,7 +293,7 @@ impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
             return Err(VMError::StackOverflow);
         }
         self.sp = new_sp;
-        let slice = &mut self.memory[self.sp as usize..(self.sp + size) as usize];
+        let slice = &mut self.memory[self.sp..(self.sp + size)];
         Ok(slice.try_into().unwrap())
     }
 
@@ -303,7 +303,7 @@ impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
     {
         let bytes = bytes_of(&value);
         let stack_slice = self.alloc_stack_space::<T>()?;
-        stack_slice.copy_from_slice(&bytes);
+        stack_slice.copy_from_slice(bytes);
         Ok(())
     }
 
@@ -314,12 +314,12 @@ impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
             return Err(VMError::StackUnderflow);
         }
         self.sp += size;
-        Ok(&self.memory[start as usize..end as usize])
+        Ok(&self.memory[start..end])
     }
 
     pub fn stack_pop<T: Pod>(&mut self) -> Result<T> {
         let slice = self.stack_pop_raw(size_of::<T>())?;
-        Ok(pod_read_unaligned::<T>(slice).clone())
+        Ok(pod_read_unaligned::<T>(slice))
     }
 
     pub fn read_heap<T: Pod>(&self, addr: usize) -> Result<T> {
@@ -329,7 +329,7 @@ impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
         if end > self.heap_end {
             return Err(VMError::HeapOverflow);
         }
-        Ok(pod_read_unaligned::<T>(&self.memory[start.into()..end.into()]).clone())
+        Ok(pod_read_unaligned::<T>(&self.memory[start..end]))
     }
 
     pub fn write_heap<T: NoUninit>(&mut self, addr: usize, value: T) -> Result<()> {
@@ -339,7 +339,7 @@ impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
         if end > self.heap_end {
             return Err(VMError::HeapOverflow);
         }
-        self.memory[start as usize..end as usize].copy_from_slice(&bytes);
+        self.memory[start..end].copy_from_slice(bytes);
         Ok(())
     }
 
@@ -352,12 +352,11 @@ impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
 
         let mut op_counter: u32 = 0;
         loop {
-            if op_counter % 1024 == 0 {
-                if self.halt_signal.is_signaled() {
+            if op_counter.is_multiple_of(1024)
+                && self.halt_signal.is_signaled() {
                     self.halt_signal.reset();
                     return Err(VMError::Halt(HaltReason::Signal));
                 }
-            }
             op_counter = op_counter.wrapping_add(1);
 
             self.debug.will_run_op().await;
@@ -372,7 +371,7 @@ mod tests {
     use super::*;
     use crate::fixture_parse::parse_fixture_with_output;
     use rstest::*;
-    use std::{path::PathBuf, result};
+    use std::path::PathBuf;
 
     #[rstest]
     #[tokio::test]

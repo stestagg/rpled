@@ -74,7 +74,7 @@ impl Program for &[u8] {
         for _ in 0..prelude.n_modules {
             let module_id: u8 = read.read()?;
             let module_flag = modules::offset_to_flag(module_id)
-                .ok_or_else(|| ProgramError::UnknownModule(module_id))?;
+                .ok_or(ProgramError::UnknownModule(module_id))?;
             modules_enabled |= module_flag;
         }
         Ok(modules_enabled)

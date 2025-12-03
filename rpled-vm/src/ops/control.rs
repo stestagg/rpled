@@ -73,6 +73,6 @@ pub fn halt<const N: usize, S: Sync, D: VmDebug>(_vm: &mut VM<N, S, D>) -> Resul
 
 pub async fn sleep<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     let duration_us: u16 = vm.stack_pop()?;
-    vm.delay(duration_us as u16).await;
+    vm.delay(duration_us).await;
     Ok(())
 }

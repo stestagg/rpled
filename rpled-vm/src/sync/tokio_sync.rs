@@ -6,6 +6,12 @@ pub struct AsyncSignal {
     flag_changed: Notify,
 }
 
+impl Default for AsyncSignal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AsyncSignal {
     pub const fn new() -> Self {
         Self {

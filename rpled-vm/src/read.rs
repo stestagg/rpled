@@ -48,7 +48,7 @@ where
             return Err(ReadError::OutOfBounds);
         }
         self.cursor += size;
-        Ok(pod_read_unaligned::<T>(&self.memory[start.into()..end.into()]).clone())
+        Ok(pod_read_unaligned::<T>(&self.memory[start.into()..end.into()]))
     }
 
     fn seek(&mut self, pos: Idx) -> Result<()> {

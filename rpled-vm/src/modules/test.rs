@@ -1,11 +1,9 @@
-use super::ModuleInit;
-use crate::vm::{Result, VM};
+use crate::vm::Result;
 use paste::paste;
 
 extern crate std;
 
-use std::format;
-use std::string::{String, ToString};
+use std::string::String;
 use std::vec::Vec;
 
 pub struct TestModule {

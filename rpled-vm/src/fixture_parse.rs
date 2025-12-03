@@ -132,12 +132,12 @@ fn generate_header(heap_size: u16) -> Vec<u8> {
 
 fn parse_number(token: &str) -> Vec<u8> {
     // Extract suffix if present
-    let (num_str, suffix) = if token.ends_with("u8") {
-        (&token[..token.len() - 2], Some("u8"))
-    } else if token.ends_with("u16") {
-        (&token[..token.len() - 3], Some("u16"))
-    } else if token.ends_with("i16") {
-        (&token[..token.len() - 3], Some("i16"))
+    let (num_str, suffix) = if let Some(stripped) = token.strip_suffix("u8") {
+        (stripped, Some("u8"))
+    } else if let Some(stripped) = token.strip_suffix("u16") {
+        (stripped, Some("u16"))
+    } else if let Some(stripped) = token.strip_suffix("i16") {
+        (stripped, Some("i16"))
     } else {
         (token, None)
     };
