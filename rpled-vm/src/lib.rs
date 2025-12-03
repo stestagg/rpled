@@ -1,4 +1,4 @@
-#![cfg_attr(not(test), no_std)]
+#![cfg_attr(not(any(test, feature = "std")), no_std)]
 // TODO: remove this when generic_const_exprs is stable
 #![allow(incomplete_features)]
 #![feature(f16)]
@@ -12,5 +12,5 @@ mod read;
 pub mod sync;
 pub mod vm;
 
-#[cfg(test)]
-mod fixture_parse;
+#[cfg(any(test, feature = "std"))]
+pub mod fixture_parse;
