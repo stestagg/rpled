@@ -1,0 +1,12 @@
+"PXS"
+0 # Version 0
+0u16 # Heap size
+4   # Remaining header len: 1 + 1 + 2
+1   # Num modules
+60  # Module: Test
+"T1"
+38   # HALT
+
+
+=== OUTPUT ===
+*HALT

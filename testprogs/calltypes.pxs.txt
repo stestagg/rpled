@@ -1,0 +1,22 @@
+HEADER(0)
+# Push the arg for the TEST1 call early
+OP:PUSH 42i16
+# CAll TEST0 which takes 0 args
+OP:TEST0 1
+# Now call TEST1 which uses the previous arg
+OP:TEST1 2
+# Push the args for the TEST2 call
+OP:PUSH 10i16
+OP:PUSH 20i16
+OP:TEST2 3
+OP:PUSH 0x0403u16
+OP:PUSH 0x0201u16
+OP:TEST2 4
+OP:HALT
+
+=== OUTPUT ===
+TEST_NO_ARGS
+TEST_ONE_ARG: 42
+TEST_TWO_ARGS: 20, 10
+TEST_FOUR_U8: 1, 2, 3, 4
+*HALT

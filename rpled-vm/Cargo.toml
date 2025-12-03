@@ -7,10 +7,18 @@ edition = "2024"
 bytemuck = { version = "1.24.0", features=["derive"] }
 bitflags = { version = "2.10.0", default-features = false, features = ["bytemuck"] }
 embassy-sync = { version = "*", optional = true }
+tokio = { version = "1.39.0", features = ["full"], optional = true }
+paste = "1.0.15"
+
+[dev-dependencies]
+regex = "*"
+rstest = "*"
+tokio = { version = "1.39.0", features = ["full"] }
+
 
 [features]
 default = ["led", "tokio"]
 led = []
 embassy = ["embassy-sync"]
-tokio = ["tokio"]
+tokio = ["dep:tokio"]
 # fp = []

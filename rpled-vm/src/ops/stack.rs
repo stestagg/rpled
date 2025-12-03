@@ -1,34 +1,37 @@
 use bytemuck::checked::pod_read_unaligned;
 use bytemuck::{cast_mut, from_bytes_mut};
 
-use crate::vm::{VM, Result, VMError};
-use crate::sync::Signal;
+use crate::sync::Sync;
+use crate::vm::{Result, VM, VMError, VmDebug};
 
-pub fn push<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn push<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     let value: u16 = vm.read_pc()?;
     vm.stack_push(value)
 }
 
-pub fn load<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn load<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     let addr: u16 = vm.read_pc()?;
     let value: u16 = vm.read_heap(addr as usize)?;
     vm.stack_push(value)
 }
 
-pub fn store<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn store<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     let addr: u16 = vm.read_pc()?;
     let stack_value: u16 = vm.stack_pop()?;
     vm.write_heap(addr as usize, stack_value)
 }
 
-pub fn pop<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn pop<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     let _value: u16 = vm.stack_pop()?;
     Ok(())
 }
 
-pub fn popn<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn popn<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     let count: u8 = vm.read_pc()?;
-    let new_sp = vm.sp.checked_add(count as usize).ok_or(VMError::StackUnderflow)?;
+    let new_sp = vm
+        .sp
+        .checked_add(count as usize)
+        .ok_or(VMError::StackUnderflow)?;
     if new_sp > vm.memory.len() {
         return Err(VMError::StackUnderflow);
     }
@@ -36,12 +39,12 @@ pub fn popn<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
     Ok(())
 }
 
-pub fn dup<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn dup<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     let value: u16 = pod_read_unaligned(&vm.memory[vm.sp..(vm.sp + 2)]);
     vm.stack_push(value)
 }
 
-pub fn swap<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn swap<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     if vm.sp + 4 > vm.memory.len() {
         return Err(VMError::StackUnderflow);
     }
@@ -51,7 +54,7 @@ pub fn swap<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
     Ok(())
 }
 
-pub fn over<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn over<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     if vm.sp + 4 > vm.memory.len() {
         return Err(VMError::StackUnderflow);
     }
@@ -59,7 +62,7 @@ pub fn over<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
     vm.stack_push(value)
 }
 
-pub fn rot<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn rot<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     if vm.sp + 6 > vm.memory.len() {
         return Err(VMError::StackUnderflow);
     }
@@ -69,6 +72,6 @@ pub fn rot<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
     Ok(())
 }
 
-pub fn zero<const N: usize, S: Signal>(vm: &mut VM<N, S>) -> Result<()> {
+pub fn zero<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     vm.stack_push(0)
 }

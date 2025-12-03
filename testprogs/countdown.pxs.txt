@@ -1,0 +1,23 @@
+HEADER(0)
+OP:PUSH 10i16        # Initialize counter to 10
+OP:DUP               # Duplicate counter for TEST call
+OP:TEST1 2           # Call test_one_arg with counter value
+OP:DEC               # Decrement counter (now stack has counter-1)
+OP:DUP               # Duplicate for loop check
+OP:JNZ -8i16        # If true, jump back to first DUP
+OP:TEST1 2           # Final call to test_one_arg with 0
+OP:HALT              # Stop execution
+
+=== OUTPUT ===
+TEST_ONE_ARG: 10
+TEST_ONE_ARG: 9
+TEST_ONE_ARG: 8
+TEST_ONE_ARG: 7
+TEST_ONE_ARG: 6
+TEST_ONE_ARG: 5
+TEST_ONE_ARG: 4
+TEST_ONE_ARG: 3
+TEST_ONE_ARG: 2
+TEST_ONE_ARG: 1
+TEST_ONE_ARG: 0
+*HALT

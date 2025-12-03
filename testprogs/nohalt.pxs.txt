@@ -1,0 +1,6 @@
+HEADER(0)
+OP:PUSH 42u16
+OP:PUSH 32u16
+
+=== OUTPUT ===
+Error: PCOverflow(7)

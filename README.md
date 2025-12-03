@@ -140,10 +140,12 @@ Comment conventions:
 |    | LED MODULE                                                                    |
 | -- | ----------- | ------------------------------ | ------------------------------ |
 | 64 | LED0 c      | `led(c)`                       | LED call with 0 args           |
-| 65 | LED1 c      | `led(c,pop())`                 | LED call with 1 arg            |
-| 66 | LED2 c      | `led(c,pop(),pop())`           | LED call with 2 args           |
-| 67 | LEDN u8 c   | `led(c,pop(), ...u8)`          | LED call with u8 args (safe)   |
+| 65 | LED1 c      | `led(c,pop())`                 | LED call with 1 arg (s[0])     |
+| 66 | LED2 c      | `led(c,pop(),pop())`           | LED call with 2 args (s[0], s[1])  |
+| 67 | LEDN c u8   | `led(c,pop(), ...u8)`          | LED call with `u8` stack values (each i16)   |
 
+* Note about module calling conventions, because stack pushes are last-in-first-out (LIFO), arguments
+have to be pushed in reverse order. *
 
 ## Pixelscript
 

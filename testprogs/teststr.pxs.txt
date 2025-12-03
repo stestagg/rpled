@@ -1,0 +1,29 @@
+HEADER(0)
+OP:JMP 16u16
+0
+"Hello, World!"
+0 0
+## Program starts here
+
+# Push a zero string address
+OP:PUSH 0i16
+OP:PUSH 3i16  # 3 here because OP:JMP = 1 + 2 (u16 arg)
+OP:TEST2 5  # testop 5 is print(*str, len)
+
+# Push the hello world address
+OP:PUSH 13i16
+OP:PUSH 4i16
+OP:TEST2 5
+
+# Just print Hello
+OP:PUSH 5i16
+OP:PUSH 4i16
+OP:TEST2 5
+
+OP:HALT
+
+=== OUTPUT ===
+TEST_PRINT: ""
+TEST_PRINT: "Hello, World!"
+TEST_PRINT: "Hello"
+*HALT

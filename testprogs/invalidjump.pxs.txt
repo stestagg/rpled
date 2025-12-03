@@ -1,0 +1,5 @@
+HEADER(0)
+OP:JMP 32i16      # Try to jump way beyond program space
+
+=== OUTPUT ===
+Error: PCOverflow(36)

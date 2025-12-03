@@ -12,6 +12,7 @@ type Result<T> = core::result::Result<T, ReadError>;
 
 pub(crate) trait Read<Idx: Copy> {
     fn read<T: Pod>(&mut self) -> Result<T>;
+    #[allow(dead_code)]
     fn seek(&mut self, pos: Idx) -> Result<()>;
 }
 
@@ -28,11 +29,16 @@ impl<'r, Idx: Copy + Default> MemoryReader<'r, Idx> {
         }
     }
 }
-    
-impl<'a, Idx> Read<Idx> for MemoryReader<'a, Idx> 
-    where 
-    Idx: Copy + From<usize> + Into<usize> + core::ops::Add<Idx, Output = Idx> + core::ops::AddAssign<Idx> + core::cmp::PartialOrd,
-    core::ops::Range<Idx>: SliceIndex<[u8]>
+
+impl<'a, Idx> Read<Idx> for MemoryReader<'a, Idx>
+where
+    Idx: Copy
+        + From<usize>
+        + Into<usize>
+        + core::ops::Add<Idx, Output = Idx>
+        + core::ops::AddAssign<Idx>
+        + core::cmp::PartialOrd,
+    core::ops::Range<Idx>: SliceIndex<[u8]>,
 {
     fn read<T: Pod>(&mut self) -> Result<T> {
         let size = Idx::from(size_of::<T>());
