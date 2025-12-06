@@ -1,0 +1,91 @@
+Name ::= ( Letter | "_" ) { Letter | Digit | "_" }
+
+Letter ::= "A" … "Z" | "a" … "z"
+Digit  ::= "0" … "9"
+Number ::= Digit { Digit }
+
+Float ::= Digit { Digit } "." Digit { Digit } [Exponent]
+         | Digit { Digit } Exponent
+Exponent ::= ("e" | "E") [ "+" | "-" ] Digit { Digit }
+
+String ::= "\"" { StringChar } "\"" 
+         | "'"  { StringChar } "'"
+
+StringChar ::= any_char_except(["\"", newline])
+             | "\" EscapeSequence
+
+EscapeSequence ::= "\"" | "'" | "\" | "n" | "r" | "t" | "0"
+
+---
+
+program        ::= metadata_block block
+
+metadata_block ::= Name "=" metadata_table
+
+metadata_table ::= "{" { metadata_field } "}"
+
+metadata_field ::= 
+        Name "=" literal                    |
+        Name "=" metadata_table             |
+        Name "=" "(" metadata_args ")"      |
+        Name "=" "{" metadata_list "}"
+
+metadata_list  ::= literal { "," literal }
+
+metadata_args  ::= literal { "," literal }
+
+block          ::= { stat [";"] } [ laststat [";"] ]
+
+stat           ::= assignment
+                 | functioncall
+                 | do block end
+                 | while exp do block end
+                 | repeat block until exp
+                 | if exp then block { elseif exp then block } [ else block ] end
+                 | for Name in Name do block end
+                 | for Name `=´ exp `,´ exp [`,´ exp] do block end  |
+                 | functiondef
+                 | localfunctiondef
+                 | localdecl
+
+assignment     ::= Name "=" exp
+
+functiondef    ::= "function" Name funcbody
+localfunctiondef ::= "local" "function" Name funcbody
+localdecl      ::= "local" Name [ "=" exp ]
+
+laststat       ::= "return" [exp] | "break"
+
+functioncall   ::= prefixexp args
+
+indexexp ::= prefixexp "[" exp "]"
+
+prefixexp      ::= Name | "(" exp ")"
+
+args           ::= "(" [ explist ] ")"           
+
+funcbody       ::= "(" [namelist] ")" block end
+
+tableconstructor ::= `{´ [fieldlist] `}´
+fieldlist ::= field {fieldsep field} [fieldsep]
+field ::= `[´ literal `]´ `=´ literal  |  Name `=´ literal  | literal
+
+namelist       ::= Name { "," Name }
+
+exp            ::= literal
+                 | prefixexp
+                 | indexexp
+                 | exp binop exp
+                 | unop exp
+                 | tableconstructor
+
+explist        ::= exp { "," exp }
+                 
+
+binop          ::= "+" | "-" | "*" | "/" | "%" | "^"
+                 | "<" | "<=" | ">" | ">=" | "==" | "~="
+                 | "and" | "or"
+
+unop           ::= "-" | "not"
+
+literal        ::= Number | String | "true" | "false" | "nil"

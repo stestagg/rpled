@@ -1,0 +1,11 @@
+[package]
+name = "rpled-pixelscript"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chumsky = "1.0.0-alpha.8"
+ariadne = "0.4"
+
+[dev-dependencies]
+indoc = "2.0"
