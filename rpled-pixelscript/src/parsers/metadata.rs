@@ -23,23 +23,31 @@ pub fn metadata_field<'src>() -> impl Parser<'src, &'src [Token], Spanned<Metada
                 // Table: {name = ..., ...} (has keys)
                 // We'll parse the braces content and determine the type
                 just(Token::LBrace)
-                    .ignore_then(choice((
-                        // Try to parse as list (no equals sign after first ident)
-                        literal()
-                            .separated_by(just(Token::Comma))
-                            .allow_trailing()
-                            .collect()
-                            .map(|items| FieldValue::List(items)),
-                        // Otherwise parse as table (recursive)
-                        field
-                            .separated_by(just(Token::Comma))
-                            .allow_trailing()
-                            .collect()
-                            .map(|fields| {
-                                let table = MetadataTable { fields };
-                                FieldValue::TableFields(table)
-                            }),
-                    )))
+                    .ignore_then(
+                        // Try empty first
+                        just(Token::RBrace)
+                            .rewind()
+                            .to(FieldValue::List(vec![]))
+                            .or(
+                                // Try to parse as list (literals only)
+                                literal()
+                                    .separated_by(just(Token::Comma))
+                                    .at_least(1)
+                                    .collect()
+                                    .map(|items| FieldValue::List(items))
+                            )
+                            .or(
+                                // Otherwise parse as table (recursive)
+                                field
+                                    .separated_by(just(Token::Comma))
+                                    .at_least(1)
+                                    .collect()
+                                    .map(|fields| {
+                                        let table = MetadataTable { fields };
+                                        FieldValue::TableFields(table)
+                                    })
+                            )
+                    )
                     .then_ignore(just(Token::RBrace)),
 
                 // Finally literal: name = value
@@ -89,6 +97,7 @@ pub fn metadata_block<'src>() -> impl Parser<'src, &'src [Token], Spanned<Metada
 }
 
 // Helper enum for discriminating field value types during parsing
+#[derive(Clone)]
 enum FieldValue {
     Literal(Spanned<crate::ast::Literal>),
     TableFields(MetadataTable),

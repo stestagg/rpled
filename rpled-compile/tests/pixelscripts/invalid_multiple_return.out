@@ -1,0 +1,3 @@
+Successfully parsed pixelscript
+Failed to convert to pixelscript: Unsupported Lua features detected:
+  - Multiple return values are not supported

@@ -1,0 +1,2 @@
+Successfully parsed pixelscript
+Failed to convert to pixelscript: Missing 'pixelscript = {...}' header as first statement in file

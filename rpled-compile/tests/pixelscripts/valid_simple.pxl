@@ -1,0 +1,10 @@
+pixelscript = {
+    name = "Simple",
+    modules = {"LED"},
+    entrypoint = "main"
+}
+
+function main()
+    led.clear()
+    sleep(1000)
+end

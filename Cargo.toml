@@ -4,5 +4,5 @@ members = [
     "rpled-compile",
     "rpled-compiler",
     "rpled-vm",
-    "rpled-debug",
+    "rpled-debug", "rpled-pixelscript",
 ]

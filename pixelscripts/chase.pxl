@@ -1,0 +1,43 @@
+pixelscript = {
+    name = "Chase",
+    modules = {"LED"},
+    entrypoint = "main",
+    params = {
+        TAIL_LENGTH = RANGE(1, 20, 5),
+        SPEED = RANGE(1, 100, 30),
+        RED = RANGE(0, 255, 255),
+        GREEN = RANGE(0, 255, 128),
+        BLUE = RANGE(0, 255, 0)
+    }
+}
+
+function main()
+    local num_pixels = led.get_num_pixels()
+    local delay = 50000 / SPEED  -- microseconds
+    local position = 0
+
+    while true do
+        led.clear()
+
+        -- Draw the tail
+        local i = 0
+        while i < TAIL_LENGTH do
+            local pixel_pos = (position - i) % num_pixels
+            if pixel_pos < 0 then
+                pixel_pos = pixel_pos + num_pixels
+            end
+
+            -- Fade the tail
+            local brightness = (TAIL_LENGTH - i) / TAIL_LENGTH
+            local r = RED * brightness
+            local g = GREEN * brightness
+            local b = BLUE * brightness
+
+            led.set_pixel(pixel_pos, r, g, b)
+            i = i + 1
+        end
+
+        position = (position + 1) % num_pixels
+        sleep(delay)
+    end
+end

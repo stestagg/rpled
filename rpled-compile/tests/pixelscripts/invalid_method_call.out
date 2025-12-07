@@ -1,0 +1,4 @@
+Successfully parsed pixelscript
+Found pixelscript: name='InvalidMethod', modules=["LED"], entrypoint='main'
+Failed to convert to pixelscript: Unsupported Lua features detected:
+  - Method calls with colon syntax (:) are not supported

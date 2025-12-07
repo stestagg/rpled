@@ -4,8 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chumsky = "1.0.0-alpha.8"
+chumsky = { version = "1.0.0-alpha.8", features = ["pratt"] }
 ariadne = "0.4"
+yansi = { version = "1.0.1", features=["detect-tty", "detect-env"] }
 
 [dev-dependencies]
 indoc = "2.0"
+rstest = "0.23"
+pretty_assertions = "*"

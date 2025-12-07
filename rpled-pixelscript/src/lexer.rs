@@ -5,7 +5,7 @@ use std::fmt;
 pub enum Token {
     // Literals
     Number(i64),
-    Float(f64),
+    Float(f16),
     String(String),
 
     // Keywords
@@ -317,7 +317,7 @@ pub fn lex(source: &str) -> Result<Vec<Spanned<Token>>, LexError> {
                 let end_pos = chars.peek().map(|(p, _)| *p).unwrap_or(source.len());
 
                 if is_float {
-                    let value = num_str.parse::<f64>().map_err(|_| LexError::InvalidNumber {
+                    let value = num_str.parse::<f16>().map_err(|_| LexError::InvalidNumber {
                         text: num_str.clone(),
                         pos: start_pos,
                     })?;

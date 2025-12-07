@@ -1,0 +1,19 @@
+pixelscript = {
+    name = "simple",
+    version = 1
+}
+
+x = 42
+y = x + 10
+
+=== OUTPUT ===
+Program {
+  Meta[pixelscript] = {
+    name = "simple",
+    version = 1,
+  },
+  block = {
+    x = 42
+    y = x + 10
+  }
+}

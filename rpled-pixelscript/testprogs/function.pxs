@@ -1,0 +1,28 @@
+pixelscript = {
+    name = "function_test"
+}
+
+function add(a, b)
+    return a + b
+end
+
+result = add(5, 10)
+
+=== OUTPUT ===
+Program {
+  Meta[pixelscript] = {
+    name = "function_test",
+  },
+  block = {
+    function add(
+      a,
+      b
+    ){
+      return a + b
+    }
+    result = add(
+      5,
+      10
+    )
+  }
+}

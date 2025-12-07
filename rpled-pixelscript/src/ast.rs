@@ -1,9 +1,7 @@
 use std::fmt;
 
-/// A span representing a location in the source code
 pub type Span = std::ops::Range<usize>;
 
-/// A value with associated source location
 #[derive(Debug, Clone, PartialEq)]
 pub struct Spanned<T> {
     pub node: T,
@@ -16,20 +14,12 @@ impl<T> Spanned<T> {
     }
 }
 
-// ============================================================================
-// Top-level Program Structure
-// ============================================================================
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program {
     pub metadata: Spanned<MetadataBlock>,
     pub block: Block,
     pub span: Span,
 }
-
-// ============================================================================
-// Metadata Block (Header)
-// ============================================================================
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MetadataBlock {
@@ -44,44 +34,33 @@ pub struct MetadataTable {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum MetadataField {
-    /// name = literal
     Literal {
         name: Spanned<String>,
         value: Spanned<Literal>,
     },
-    /// name = { nested_fields }
     Table {
         name: Spanned<String>,
         table: Spanned<MetadataTable>,
     },
-    /// name = (args...)  -- Function-call-like syntax
     Call {
         name: Spanned<String>,
         args: Vec<Spanned<Literal>>,
     },
-    /// name = {item1, item2}  -- List syntax
     List {
         name: Spanned<String>,
         items: Vec<Spanned<Literal>>,
     },
 }
 
-// ============================================================================
-// Literals
-// ============================================================================
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
     Number(i64),
-    Float(f64),
+    Float(f16),
     String(String),
     Bool(bool),
     Nil,
 }
-
-// ============================================================================
-// Lua Code Structures
-// ============================================================================
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Block {
@@ -178,10 +157,6 @@ pub struct ReturnStmt {
     pub value: Option<Spanned<Expr>>,
 }
 
-// ============================================================================
-// Expressions
-// ============================================================================
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     Literal(Literal),
@@ -240,10 +215,6 @@ pub enum TableField {
     Value(Spanned<Literal>),
 }
 
-// ============================================================================
-// Operators
-// ============================================================================
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BinOp {
     // Arithmetic
@@ -270,10 +241,6 @@ pub enum UnOp {
     Neg,
     Not,
 }
-
-// ============================================================================
-// Helper methods
-// ============================================================================
 
 impl BinOp {
     pub fn precedence(&self) -> u8 {

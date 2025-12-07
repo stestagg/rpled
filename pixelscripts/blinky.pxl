@@ -1,0 +1,28 @@
+pixelscript = {
+    name = "Blinky",
+    modules = {"LED"},
+    entrypoint = "main",
+    params = {
+        SPEED = RANGE(1, 100, 50) -- Speed parameter from 1 to 100, default 50
+    }
+}
+
+function main()
+    -- Get the number of pixels
+    local num_pixels = led.get_num_pixels()
+    -- calculate the delay based on SPEED param
+    local delay = 1000 / SPEED  -- in milliseconds
+    local middle = num_pixels / 2
+
+    while true do
+        led.clear()
+        -- sleep in microseconds
+        sleep(delay * 1000)
+        led.set_pixel(middle, 255, 0, 0)  -- Set middle pixel to red
+        sleep(delay * 1000)
+        led.set_pixel(middle, 0, 0, 0)    -- Turn off middle pixel
+        sleep(delay * 1000)
+        led.fill(0, num_pixels - 1, 0, 0, 255)  -- Fill all pixels with blue
+        sleep(delay * 1000)
+    end
+end

@@ -1,0 +1,13 @@
+pixelscript = {
+    name = "InvalidVarargs",
+    modules = {"LED"},
+    entrypoint = "main"
+}
+
+function test(...)
+    led.clear()
+end
+
+function main()
+    test(1, 2, 3)
+end

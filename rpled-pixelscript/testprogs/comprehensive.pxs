@@ -1,0 +1,78 @@
+pixelscript = {
+    name = "comprehensive",
+    version = 2,
+    modules = {"LED", "TIME"},
+    config = {
+        fps = 60,
+        brightness = 128
+    }
+}
+
+-- Local variables
+local count = 0
+local result
+
+-- Function definition
+function lerp(a, b, t)
+    return a + (b - a) * t
+end
+
+-- Loop with condition
+for i = 1, 10, 2 do
+    count = count + i
+end
+
+-- Conditional logic
+if count > 20 then
+    result = lerp(0, 255, count / 100)
+elseif count > 10 then
+    result = 128
+else
+    result = 0
+end
+
+return result
+
+=== OUTPUT ===
+Program {
+  Meta[pixelscript] = {
+    name = "comprehensive",
+    version = 2,
+    modules = {
+      "LED",
+      "TIME",
+    },
+    config = {
+      fps = 60,
+      brightness = 128,
+    },
+  },
+  block = {
+    local count = 0
+    local result
+    function lerp(
+      a,
+      b,
+      t
+    ){
+      return a + (
+        b - a
+      ) * t
+    }
+    for i = 1, 10, 2 do {
+      count = count + i
+    } end
+    if count > 20 then {
+      result = lerp(
+        0,
+        255,
+        count / 100
+      )
+    } elseif count > 10 then {
+      result = 128
+    } else {
+      result = 0
+    } end
+    return result
+  }
+}
