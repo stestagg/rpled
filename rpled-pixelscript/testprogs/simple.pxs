@@ -12,7 +12,7 @@ Program {
     name = "simple",
     version = 1,
   },
-  block = {
+  Block = {
     x = 42
     y = x + 10
   }

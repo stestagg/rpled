@@ -56,7 +56,7 @@ pub enum MetadataField {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Literal {
     Number(i64),
-    Float(f16),
+    Float(f32),
     String(String),
     Bool(bool),
     Nil,

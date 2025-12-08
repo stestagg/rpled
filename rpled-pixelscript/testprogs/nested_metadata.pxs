@@ -22,7 +22,7 @@ Program {
       bg = 0,
     },
   },
-  block = {
+  Block = {
     x = 1
   }
 }

@@ -47,7 +47,7 @@ Program {
       brightness = 128,
     },
   },
-  block = {
+  Block = {
     local count = 0
     local result
     function lerp(

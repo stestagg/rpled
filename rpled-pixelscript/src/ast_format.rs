@@ -1,7 +1,7 @@
 use yansi::{Paint, Painted, Condition};
 
 use crate::ast::*;
-use std::fmt::{self, Display, Write};
+use std::fmt::{self, Display};
 
 
 pub trait AstFormat: AstFormatInternal {
@@ -112,13 +112,17 @@ impl FormattedAst {
 
     pub fn output<T: Display>(&mut self, text: Painted<T>)
     {
-        if self.pending_nl && self.options.is_multiline() {
+        if self.pending_nl {
             self.pending_nl = false;
-            if let Some(annotation) = self.span_annotation.take() {
-                self.result.push("\t".to_string());
-                self.result.push(annotation);
+            if self.options.is_multiline() {
+                if let Some(annotation) = self.span_annotation.take() {
+                    self.result.push("\t".to_string());
+                    self.result.push(annotation);
+                }
+                self.result.push(self.line_prefix());
+            } else {
+                self.result.push(" ".to_string());
             }
-            self.result.push(self.line_prefix());
         }
         self.result.push(text.whenever(self.options.condition).to_string());
     }
@@ -142,12 +146,12 @@ impl FormattedAst {
     pub fn output_item<T: Into<String>>(&mut self, item: T) {
         let text = item.into();
         match text.as_str() {
-            "{" | "[" | "(" => {
+            "{" |"[" | "(" => {
                 self.output(text.green());
                 self.start_block();
                 self.nl();
             },
-            "}" | "]" | ")" => {
+            "]" | ")" | "}" => {
                 self.end_block();
                 self.nl();
                 self.output(text.green());
@@ -161,11 +165,12 @@ impl FormattedAst {
                     self.nl();
                 } else {
                     self.output(";".cyan());
+                    self.nl();
                 }
             }
             "=" => {
                 self.output(Painted::new(format!(" {} ", text)).blue());
-            },  
+            },
             _ => todo!("Unhandled output item: {}", text),
         }
     }
@@ -243,6 +248,10 @@ macro_rules! out {
         $w.output($value$(.$sub())*.whenever($w.options.condition));
     };
 
+    (@single $w:expr, [$value:ident $($sub:ident)+]) => {
+        $w.output($value$(.$sub())*.whenever($w.options.condition));
+    };
+
     (@single $w:expr, ($($field:ident).+)) => {
         $($field).+.format_internal($w);
     };
@@ -252,7 +261,7 @@ macro_rules! out {
 
 impl AstFormatInternal for String {
     fn format_internal(&self, output: &mut FormattedAst) {
-        output.output(Painted::new(self.clone()));
+        output.output(self.bold());
     }
 }
 
@@ -262,7 +271,7 @@ impl AstFormatInternal for Program {
         out!(output,
             ["Program" blue], SP, '{',
             (self.metadata), ',',
-            ["block = "],(self.block),
+            ["Block = " blue],(self.block),
             '}',
         )
         
@@ -274,7 +283,7 @@ impl<T: AstFormatInternal> AstFormatInternal for Spanned<T> {
         if output.options.include_spans {
             let start_str = format!("{}", self.span.start);
             let end_str = format!("{}", self.span.end);
-            let span_str = format!("[{} - {}]", start_str.blue(), end_str.blue());
+            let span_str = format!("[{}..{}]:", start_str.blue(), end_str.blue());
             output.add_span_annotation(span_str);
             self.node.format_internal(output);
         } else {
@@ -287,7 +296,7 @@ impl<T: AstFormatInternal> AstFormatInternal for Spanned<T> {
 impl AstFormatInternal for MetadataBlock {
     fn format_internal(&self, output: &mut FormattedAst) {
         out!(output,
-            ["Meta" blue], ["["], (self.name.node), ["]"], '=', (self.table)
+            ["Meta" blue], ["[" cyan], (self.name.node), ["]" cyan], '=', (self.table)
         )
     }
 }
@@ -330,7 +339,8 @@ impl AstFormatInternal for Literal {
                 output.output(f.yellow().to_owned());
             }
             Literal::String(s) => {
-                output.output(Painted::new(format!("\"{}\"", s)));
+                out!(output, ["\""], [s yellow], ["\""]);
+                
             }
             Literal::Bool(b) => {
                 output.output(Painted::new(format!("{}", b)));
@@ -365,23 +375,23 @@ impl AstFormatInternal for Statement {
                 output.current_depth += 1;
                 block.format_internal(output);
                 output.current_depth -= 1;
-                out!(output, "end");
+                out!(output, ["end" magenta]);
             }
             Statement::While(w) => {
-                out!(output, ["while "], (w.condition), SP, (w.block));
+                out!(output, ["while " magenta], (w.condition), SP, (w.block));
             }
             Statement::Repeat(r) => {
-                out!(output, ["repeat "], (r.block), [" until "], (r.condition));
+                out!(output, ["repeat " magenta], (r.block), [" until " magenta], (r.condition));
             }
             Statement::If(i) => {
-                out!(output, ["if "], (i.condition), [" then "]);
+                out!(output, ["if " magenta], (i.condition), [" then " magenta]);
                 i.then_block.format_internal(output);
                 for (cond, block) in &i.elseif_branches {
-                    out!(output, [" elseif "], (cond), [" then "]);
+                    out!(output, [" elseif " magenta], (cond), [" then " magenta]);
                     block.format_internal(output);
                 }
                 if let Some(else_block) = &i.else_block {
-                    out!(output, [" else "]);
+                    out!(output, [" else " magenta]);
                     else_block.format_internal(output);
                 }
                 out!(output, [" end"]);
@@ -391,17 +401,17 @@ impl AstFormatInternal for Statement {
                 if let Some(step) = &f.step {
                     out!(output, [", "], (step));
                 }
-                out!(output, SP, ["do "]);
+                out!(output, SP, ["do " magenta]);
                 f.block.format_internal(output);
-                out!(output, SP, ["end"]);
+                out!(output, SP, ["end" magenta]);
             }
             Statement::ForIn(f) => {
-                out!(output, ["for "], (f.var.node), [" in "], (f.iterator.node), [" do"]);
+                out!(output, ["for " magenta], (f.var.node), [" in " magenta], (f.iterator.node), [" do" magenta]);
                 f.block.format_internal(output);
-                out!(output, SP, ["end"]);
+                out!(output, SP, ["end" magenta]);
             }
             Statement::FunctionDef(f) => {
-                out!(output, ["function "], (f.name.node), '(');
+                out!(output, ["function " magenta], (f.name.node), '(');
                 for (i, param) in f.params.iter().enumerate() {
                     param.format_internal(output);
                     if i < f.params.len() - 1 {
@@ -412,7 +422,7 @@ impl AstFormatInternal for Statement {
                 f.block.format_internal(output);
             }
             Statement::LocalFunctionDef(f) => {
-                out!(output, ["local function "], (f.name.node), '(');
+                out!(output, ["local function " magenta], (f.name.node), '(');
                 for (i, param) in f.params.iter().enumerate() {
                     param.format_internal(output);
                     if i < f.params.len() - 1 {
@@ -423,13 +433,13 @@ impl AstFormatInternal for Statement {
                 f.block.format_internal(output);
             }
             Statement::LocalDecl(d) => {
-                out!(output, ["local"], SP, (d.name.node));
+                out!(output, ["local" magenta], SP, (d.name.node));
                 if let Some(value) = &d.value {
                     out!(output, '=', (value));
                 }
             }
             Statement::Break => {
-                out!(output, ["break"]);
+                out!(output, ["break" magenta]);
             }
         }
     }
@@ -524,7 +534,7 @@ impl AstFormatInternal for TableField {
 
 impl AstFormatInternal for ReturnStmt {
     fn format_internal(&self, output: &mut FormattedAst) {
-        out!(output, ["return"], SP, (?self.value));
+        out!(output, ["return" magenta], SP, (?self.value));
     }
 }
 

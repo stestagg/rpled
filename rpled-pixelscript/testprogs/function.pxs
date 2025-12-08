@@ -13,7 +13,7 @@ Program {
   Meta[pixelscript] = {
     name = "function_test",
   },
-  block = {
+  Block = {
     function add(
       a,
       b

@@ -1,5 +1,3 @@
-#![feature(f16)]
-
 pub mod ast;
 pub mod lexer;
 pub mod parsers;

@@ -2,7 +2,7 @@ use rstest::*;
 use std::path::PathBuf;
 use crate::error::parse_program;
 use crate::ast_format::{AstFormat, AstFormatOptions};
-use pretty_assertions::{assert_eq, assert_ne};
+use pretty_assertions::assert_eq;
 
 const OUTPUT_SEPARATOR: &str = "=== OUTPUT ===";
 

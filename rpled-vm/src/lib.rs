@@ -1,7 +1,6 @@
 #![cfg_attr(not(any(test, feature = "std")), no_std)]
 // TODO: remove this when generic_const_exprs is stable
 #![allow(incomplete_features)]
-#![feature(f16)]
 #![feature(generic_const_exprs)]
 #![feature(never_type)]
 
