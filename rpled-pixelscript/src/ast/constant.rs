@@ -89,3 +89,21 @@ parser!(for: Constant {
         nil,
     ))
 });
+
+// Formatting implementation
+impl AstFormat for Constant {
+    fn format_into(&self, f: &mut Formatter) {
+        match self {
+            Constant::Num(n) => f.write_tagged("Num", n),
+            Constant::Float(x) => f.write_tagged("Float", x),
+            Constant::String(s) => f.write_tagged("String", format!("\"{}\"", s)),
+            Constant::True => f.write("true".yellow()),
+            Constant::False => f.write("false".yellow()),
+            Constant::Nil => f.write("nil".yellow()),
+        }
+    }
+}
+
+impl AstFormatWithName for Constant {
+    const NODE_NAME: &'static str = "Constant";
+}

@@ -2,7 +2,7 @@ use super::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Block {
-    statements: Vec<Statement>
+    pub statements: Vec<Statement>
 }
 
 parser!(for: Block {
@@ -15,5 +15,22 @@ parser!(for: Block {
             statements
         })
         .delimited_by(just('{'), just('}'))
-    }   
+    }
 );
+
+// Formatting implementation
+impl AstFormat for Block {
+    fn format_into(&self, f: &mut Formatter) {
+        if self.statements.is_empty() {
+            f.write("empty".dim());
+        } else {
+            f.write("{".green());
+            f.list(&self.statements, |f, stmt| stmt.format_with_name(f));
+            f.write("}".green());
+        }
+    }
+}
+
+impl AstFormatWithName for Block {
+    const NODE_NAME: &'static str = "Block";
+}

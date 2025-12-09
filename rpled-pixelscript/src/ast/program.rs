@@ -19,15 +19,15 @@ parser!(for: Program {
         })
 });
 
-// impl AstFormatInternal for Program {
+// Formatting implementation
+impl AstFormat for Program {
+    fn format_into(&self, f: &mut Formatter) {
+        f.field("metadata", |f| self.metadata.format_with_name(f));
+        f.separator();
+        f.field("block", |f| self.block.format_with_name(f));
+    }
+}
 
-//     fn format_internal(&self, output: &mut FormattedAst) {
-//         ast_fmt!(output,
-//             ["Program" blue], SP, '{',
-//             (self.metadata), ',',
-//             ["Block = " blue],(self.block),
-//             '}',
-//         )
-        
-//     }
-// }
+impl AstFormatWithName for Program {
+    const NODE_NAME: &'static str = "Program";
+}

@@ -79,4 +79,67 @@ parser!(for: MetadataBlock {
         .then(MetadataTable::parser())
         .map(|(_, table)| MetadataBlock(table))
 });
-    
+
+// Formatting implementations
+impl AstFormat for MetadataValue {
+    fn format_into(&self, f: &mut Formatter) {
+        match self {
+            MetadataValue::Constant(c) => c.format_with_name(f),
+
+            MetadataValue::Nested(table) => table.format_with_name(f),
+
+            MetadataValue::List(items) => {
+                f.write("list".cyan());
+                f.write_plain(": ");
+                f.write("{".green());
+                f.list(items, |f, item| item.format_with_name(f));
+                f.write("}".green());
+            }
+
+            MetadataValue::Call { name, args } => {
+                f.write("call".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.write(name.white());
+                    f.separator();
+                    f.write("{".green());
+                    f.list(args, |f, arg| arg.format_with_name(f));
+                    f.write("}".green());
+                });
+            }
+        }
+    }
+}
+
+impl AstFormatWithName for MetadataValue {
+    const NODE_NAME: &'static str = "MetadataValue";
+}
+
+impl AstFormat for MetadataTable {
+    fn format_into(&self, f: &mut Formatter) {
+        f.write("{".green());
+        let mut fields: Vec<_> = self.fields.iter().collect();
+        fields.sort_by_key(|(k, _)| *k); // Sort for consistent output
+        for (i, (key, value)) in fields.iter().enumerate() {
+            f.field(key, |f| value.format_with_name(f));
+            if i < fields.len() - 1 {
+                f.comma();
+            }
+        }
+        f.write("}".green());
+    }
+}
+
+impl AstFormatWithName for MetadataTable {
+    const NODE_NAME: &'static str = "MetadataTable";
+}
+
+impl AstFormat for MetadataBlock {
+    fn format_into(&self, f: &mut Formatter) {
+        self.0.format_with_name(f);
+    }
+}
+
+impl AstFormatWithName for MetadataBlock {
+    const NODE_NAME: &'static str = "MetadataBlock";
+}

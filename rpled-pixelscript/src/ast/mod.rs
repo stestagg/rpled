@@ -45,4 +45,8 @@ pub(crate) mod prelude {
     pub use super::expr::Expression;
     pub use super::statement::Statement;
     pub use super::block::Block;
+
+    // Formatting
+    pub use crate::format::{AstFormat, AstFormatWithName, Formatter};
+    pub use yansi::Paint;
 }

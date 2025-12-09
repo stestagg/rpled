@@ -58,3 +58,73 @@ parser!(for: Expression {
     })
 });
 
+// Formatting implementation
+impl AstFormat for Expression {
+    fn format_into(&self, f: &mut Formatter) {
+        match self {
+            // Delegate to child's format_with_name() for wrapped output
+            Expression::Constant(c) => c.format_with_name(f),
+
+            Expression::Variable(name) => {
+                f.write("var".cyan());
+                f.write_plain(": ");
+                f.write(name.white());
+            }
+
+            Expression::BinaryOp { left, op, right } => {
+                f.write("binop".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    left.format_with_name(f);
+                    f.separator();
+                    f.write(op.blue());
+                    f.separator();
+                    right.format_with_name(f);
+                });
+            }
+
+            Expression::UnaryOp { op, expr } => {
+                f.write("unop".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.write(op.blue());
+                    f.separator();
+                    expr.format_with_name(f);
+                });
+            }
+
+            Expression::FunctionCall { name, args } => {
+                f.write("call".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.write(name.white());
+                    f.separator();
+                    // Use curly braces for list (lisp-style)
+                    f.write("{".green());
+                    f.list(args, |f, arg| arg.format_with_name(f));
+                    f.write("}".green());
+                });
+            }
+
+            Expression::TableDef(fields) => {
+                f.write("table".cyan());
+                f.write_plain(": ");
+                f.write("{".green());
+                f.list(fields, |f, (key, value)| {
+                    f.nested(|f| {
+                        key.format_with_name(f);
+                        f.write_plain(" ");
+                        f.write("=>".cyan());
+                        f.write_plain(" ");
+                        value.format_with_name(f);
+                    });
+                });
+                f.write("}".green());
+            }
+        }
+    }
+}
+
+impl AstFormatWithName for Expression {
+    const NODE_NAME: &'static str = "Expression";
+}

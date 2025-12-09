@@ -18,15 +18,14 @@ pub fn name_parser<'a>() -> impl Parser<'a, &'a str, String, Extra<'a>> + Clone 
 }
 
 pub fn assignment_parser<'a>() -> impl Parser<'a, &'a str, (bool, String, Expression), Extra<'a>> + Clone {
-    just("local")
-        .or_not()
-        .map(|v| v.is_some())
-        .then(whitespace())
+    just("local").or_not().map(|v| v.is_some())
+        .then_ignore(whitespace())
         .then(name_parser())
-        .then(whitespace())
+        .then_ignore(whitespace())
         .then_ignore(just('='))
-        .then(whitespace())
+        .then_ignore(whitespace())
         .then(Expression::parser())
+        .map(|((is_local, name), expr)| (is_local, name, expr))
 }
 
 pub fn call_parser<'a, T>(arg: impl Parser<'a, &'a str, T, Extra<'a>> + Clone) -> impl Parser<'a, &'a str, (String, Vec<T>), Extra<'a>> + Clone {
@@ -38,7 +37,7 @@ pub fn call_parser<'a, T>(arg: impl Parser<'a, &'a str, T, Extra<'a>> + Clone) -
     )
 }
 
-pub fn parse_program(src: &str) -> impl Parser<&str, Program>
+pub fn parse_program<'a>(src: &'a str) -> ParseResult<Program, Rich<'a, char>>
 {
-    Ext(Program).parse(src)
+    Program::parser().parse(src)
 }

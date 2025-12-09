@@ -162,3 +162,159 @@ parser!(for: Statement {
         ))
     }
 );
+
+// Formatting implementation
+impl AstFormat for Statement {
+    fn format_into(&self, f: &mut Formatter) {
+        match self {
+            Statement::Assignment { target, value, local } => {
+                f.write("assign".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    if *local {
+                        f.write("local".magenta());
+                        f.separator();
+                    }
+                    f.write(target.white());
+                    f.separator();
+                    value.format_with_name(f);
+                });
+            }
+
+            Statement::FunctionCall { name, args } => {
+                f.write("call".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.write(name.white());
+                    f.separator();
+                    f.write("{".green());
+                    f.list(args, |f, arg| arg.format_with_name(f));
+                    f.write("}".green());
+                });
+            }
+
+            Statement::Block(block) => {
+                block.format_with_name(f);
+            }
+
+            Statement::WhileLoop { cond, block } => {
+                f.write("while".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.field("condition", |f| cond.format_with_name(f));
+                    f.separator();
+                    f.field("block", |f| block.format_with_name(f));
+                });
+            }
+
+            Statement::RepeatLoop { cond, block } => {
+                f.write("repeat".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.field("block", |f| block.format_with_name(f));
+                    f.separator();
+                    f.field("until", |f| cond.format_with_name(f));
+                });
+            }
+
+            Statement::IfStmt { if_part, else_if_part, else_part } => {
+                f.write("if".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.field("condition", |f| if_part.condition.format_with_name(f));
+                    f.separator();
+                    f.field("then", |f| if_part.block.format_with_name(f));
+
+                    if !else_if_part.is_empty() {
+                        f.separator();
+                        f.field("elseif", |f| {
+                            f.write("{".green());
+                            f.list(else_if_part, |f, branch| {
+                                f.nested(|f| {
+                                    f.field("condition", |f| branch.condition.format_with_name(f));
+                                    f.separator();
+                                    f.field("then", |f| branch.block.format_with_name(f));
+                                });
+                            });
+                            f.write("}".green());
+                        });
+                    }
+
+                    if else_part.is_some() {
+                        f.separator();
+                        f.optional("else", else_part, |f, block| {
+                            block.format_with_name(f);
+                        });
+                    }
+                });
+            }
+
+            Statement::ForIn { name, iter, block } => {
+                f.write("for-in".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.field("var", |f| f.write(name.white()));
+                    f.separator();
+                    f.field("in", |f| f.write(iter.white()));
+                    f.separator();
+                    f.field("block", |f| block.format_with_name(f));
+                });
+            }
+
+            Statement::ForNum { name, start, end, step, block } => {
+                f.write("for-num".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.field("var", |f| f.write(name.white()));
+                    f.separator();
+                    f.field("start", |f| start.format_with_name(f));
+                    f.separator();
+                    f.field("end", |f| end.format_with_name(f));
+                    if step.is_some() {
+                        f.separator();
+                        f.optional("step", step, |f, s| s.format_with_name(f));
+                    }
+                    f.separator();
+                    f.field("block", |f| block.format_with_name(f));
+                });
+            }
+
+            Statement::FunctionDef { name, params, block, local } => {
+                f.write("function".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    if *local {
+                        f.write("local".magenta());
+                        f.separator();
+                    }
+                    f.field("name", |f| f.write(name.white()));
+                    f.separator();
+                    f.field("params", |f| {
+                        f.write("{".green());
+                        f.list(params, |f, param| f.write(param.white()));
+                        f.write("}".green());
+                    });
+                    f.separator();
+                    f.field("block", |f| block.format_with_name(f));
+                });
+            }
+        }
+    }
+}
+
+impl AstFormatWithName for Statement {
+    const NODE_NAME: &'static str = "Statement";
+}
+
+// Also implement for ConditionalBranch
+impl AstFormat for ConditionalBranch {
+    fn format_into(&self, f: &mut Formatter) {
+        f.field("condition", |f| self.condition.format_with_name(f));
+        f.separator();
+        f.field("block", |f| self.block.format_with_name(f));
+    }
+}
+
+impl AstFormatWithName for ConditionalBranch {
+    const NODE_NAME: &'static str = "ConditionalBranch";
+}
