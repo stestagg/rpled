@@ -199,17 +199,15 @@ impl Display for FormattedAst {
     }
 }
 
-
-// Macro
-
-macro_rules! out {
+#[macro_export]
+macro_rules! ast_fmt {
 
     ($w:expr, $first:tt) => {
-        out!(@single $w, $first);
+        ast_format!(@single $w, $first);
     };
     ($w:expr, $($item:tt),* $(,)?) => {{
         $(
-            out!(@single $w, $item);
+            ast_format!(@single $w, $item);
         )*
     }};
 
@@ -265,18 +263,6 @@ impl AstFormatInternal for String {
     }
 }
 
-impl AstFormatInternal for Program {
-
-    fn format_internal(&self, output: &mut FormattedAst) {
-        out!(output,
-            ["Program" blue], SP, '{',
-            (self.metadata), ',',
-            ["Block = " blue],(self.block),
-            '}',
-        )
-        
-    }
-}
 
 impl<T: AstFormatInternal> AstFormatInternal for Spanned<T> {
     fn format_internal(&self, output: &mut FormattedAst) {
@@ -289,15 +275,6 @@ impl<T: AstFormatInternal> AstFormatInternal for Spanned<T> {
         } else {
             self.node.format_internal(output);
         }
-    }
-}
-
-
-impl AstFormatInternal for MetadataBlock {
-    fn format_internal(&self, output: &mut FormattedAst) {
-        out!(output,
-            ["Meta" blue], ["[" cyan], (self.name.node), ["]" cyan], '=', (self.table)
-        )
     }
 }
 

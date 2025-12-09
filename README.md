@@ -1,4 +1,4 @@
-# RPLed
+    # RPLed
 
 An addressable LED firmware for RP2XXX microcontrollers, written in Rust.
 

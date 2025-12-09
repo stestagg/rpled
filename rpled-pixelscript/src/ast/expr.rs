@@ -1,9 +1,9 @@
-use super::literal::Literal;
+use super::Constant;
 
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
-    Literal(Literal),
+    Constant(Constant),
     Variable(String),
     FunctionCall {name: String, args: Vec<Expression>},
     UnaryOp {op: String, expr: Box<Expression>},

@@ -1,11 +1,11 @@
 use crate::ast::Spanned;
-use std::fmt;
-use chumsky::{prelude::*, primitive};
+use chumsky::input::InputRef;
+use chumsky::prelude::*;
 use chumsky::extension::v1::{ExtParser, Ext};
 
 
-#[derive(Clone, Debug, PartialEq, Display)]
-pub enum Literal{
+#[derive(Clone, Debug, PartialEq)]
+pub enum Constant{
     Num(i16),
     Float(f32),
     String(String),
@@ -14,17 +14,26 @@ pub enum Literal{
     Nil,
 }
 
-impl<'src, I, E> ExtParser<'src, I, Spanned<Literal>, E> for Literal
-where
-    I: Input<'src, Token = u8>,
-    E: Err<Rich<'src, char, Span>>,
-{
-    fn parse(&self, inp: &mut InputRef<'src, '_, I, E>) -> Result<Spanned<Literal>, E> {
+impl std::fmt::Display for Constant {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Constant::Num(n) => write!(f, "{}", n),
+            Constant::Float(x) => write!(f, "{}", x),
+            Constant::String(s) => write!(f, "{}", s),
+            Constant::True => write!(f, "true"),
+            Constant::False => write!(f, "false"),
+            Constant::Nil => write!(f, "nil"),
+        }
+    }
+}
+
+crate::parser! {
+    ConstantParser(inp) -> Result<Constant> {
         let number = text::int(10)
             .to_slice()
             .from_str()
             .unwrapped()
-            .map(Literal::Num);
+            .map(Constant::Num);
 
         let exponent = one_of("eE")
             .then(one_of("+-").or_not())
@@ -48,7 +57,7 @@ where
             .to_slice()
             .from_str()
             .unwrapped()
-            .map(Literal::Float);
+            .map(Constant::Float);
 
 
         let escape = just('\\').then(choice((
@@ -67,7 +76,7 @@ where
             .or(escape)
             .repeated()
             .to_slice()
-            .map(Literal::String)
+            .map(Constant::String)
             .delimited_by(just('"'), just('"'));
 
         let single_string = none_of("'")
@@ -75,25 +84,25 @@ where
             .or(escape)
             .repeated()
             .to_slice()
-            .map(Literal::String)
+            .map(Constant::String)
             .delimited_by(just('\''), just('\''));
 
         let string = double_string.or(single_string);
 
         let boolean = choice((
-            just("true").to(Literal::True),
-            just("false").to(Literal::False),
+            just("true").to(Constant::True),
+            just("false").to(Constant::False),
         ));
 
-        let nil = just("nil").to(Literal::Nil);
+        let nil = just("nil").to(Constant::Nil);
 
-        let literal = choice((
+        let constant = choice((
             float,
             number,
             string,
             boolean,
             nil,
         ));
-        literal.parse(inp)
+        constant.parse(inp)
     }
 }

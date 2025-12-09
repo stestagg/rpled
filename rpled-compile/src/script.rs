@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context, Result};
-use rpled_pixelscript::ast::{MetadataBlock, MetadataField, MetadataTable, Literal};
+use rpled_pixelscript::ast::{MetadataBlock, MetadataField, MetadataTable, Constant};
 use crate::parser::ParsedProgram;
 
 #[derive(Debug)]

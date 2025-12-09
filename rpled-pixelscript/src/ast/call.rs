@@ -1,14 +1,13 @@
 use super::statement::Statement;
 
-
 #[derive(Clone, Debug, PartialEq)]
-pub struct Block {
-    statements: Vec<Statement>,
-    return_stmt: Option<Box<Statement>>,
+pub struct Call {
+    name: String,
+    args: Vec<Expression>,
 }
 
 crate::parser! {
-    BlockParser(inp) -> Result<Block> {
+    CallParser(inp) -> Result<Call> {
         // Placeholder implementation
         unimplemented!()
     }
