@@ -1,15 +1,19 @@
-use super::statement::Statement;
-
+use super::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Block {
-    statements: Vec<Statement>,
-    return_stmt: Option<Box<Statement>>,
+    statements: Vec<Statement>
 }
 
-crate::parser! {
-    BlockParser(inp) -> Result<Block> {
-        // Placeholder implementation
-        unimplemented!()
-    }
-}
+parser!(for: Block {
+    whitespace()
+        .ignore_then(Statement::parser())
+        .then_ignore(whitespace())
+        .separated_by(one_of(";\n").then(whitespace()))
+        .collect::<Vec<_>>()
+        .map(|statements| Block {
+            statements
+        })
+        .delimited_by(just('{'), just('}'))
+    }   
+);

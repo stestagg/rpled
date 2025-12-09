@@ -263,27 +263,11 @@ impl AstFormatInternal for String {
     }
 }
 
-
-impl<T: AstFormatInternal> AstFormatInternal for Spanned<T> {
-    fn format_internal(&self, output: &mut FormattedAst) {
-        if output.options.include_spans {
-            let start_str = format!("{}", self.span.start);
-            let end_str = format!("{}", self.span.end);
-            let span_str = format!("[{}..{}]:", start_str.blue(), end_str.blue());
-            output.add_span_annotation(span_str);
-            self.node.format_internal(output);
-        } else {
-            self.node.format_internal(output);
-        }
-    }
-}
-
-
-impl AstFormatInternal for MetadataTable {
-    fn format_internal(&self, output: &mut FormattedAst) {
-        out!(output, '{', [each ',' &self.fields], '}');
-    }
-}
+// impl AstFormatInternal for MetadataTable {
+//     fn format_internal(&self, output: &mut FormattedAst) {
+//         out!(output, '{', [each ',' &self.fields], '}');
+//     }
+// }
 
 
 impl AstFormatInternal for MetadataField {

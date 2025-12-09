@@ -1,8 +1,6 @@
 use std::collections::HashMap;
-
-use chumsky::{prelude::*, extension::v1::Ext, extra, input::{Input, InputRef}};
-
-use crate::{ast::{Constant, call::Call, constant::ConstantParser}, ast_format::{AstFormatInternal, FormattedAst}};
+use crate::parsers::{call_parser, name_parser};
+use super::prelude::*;
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -10,23 +8,35 @@ pub enum MetadataValue {
     Constant(Constant),
     Nested(Box<MetadataTable>),
     List(Vec<Constant>),
-    Call(Call)
+    Call {name: String, args: Vec<MetadataValue>},
 }
 
-crate::parser! {
-    MetadataValueParser(inp) -> Result<MetadataValue> {
-        // Implementation of the parser goes here
-        choice(
-            Ext(ConstantParser {}).map(MetadataValue::Constant),
-            Ext(MetadataTableParser {}).map(|table| MetadataValue::Nested(Box::new(table))),
-            Ext(ConstantParser {})
-                .repeated()
-                .map(MetadataValue::List)
-                .delimited_by(just('{'), just('}')),
-            Ext(CallParser {}).map(MetadataValue::Call)
-        )
-    }
-}
+parser!(for: MetadataValue {
+    recursive(|mv| {
+        choice((
+            // Try nested table first (starts with { and contains name = value pairs)
+            MetadataTable::parser()
+                .map(|table| MetadataValue::Nested(Box::new(table))),
+
+            // Function call: name(arg1, arg2, ...)
+            call_parser(mv)
+                .map(|(name, args)| MetadataValue::Call {name, args}),
+
+            // List of constants: { const, const, ... }
+            Constant::parser()
+                .then_ignore(whitespace())
+                .separated_by(just(',').then(whitespace()))
+                .allow_trailing()
+                .collect::<Vec<_>>()
+                .delimited_by(just('{').then(whitespace()), whitespace().then(just('}')))
+                .map(MetadataValue::List),
+
+            // Plain constant (fallback)
+            Constant::parser()
+                .map(MetadataValue::Constant),
+        ))
+    })
+});
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -34,52 +44,39 @@ pub struct MetadataTable {
     pub fields: HashMap<String, MetadataValue>,
 }
 
-crate::parser! {
-    MetadataTableParser(inp) -> Result<MetadataTable> {
+parser!(for: MetadataTable {
+    let separator = choice((
+        newline().repeated().at_least(1).ignored(),
+        just(';').then(whitespace()).ignored(),
+    ));
 
-        let parser = just('{')
-            .then(whitespace())
-            .then(name_parser())
-            .then(whitespace())
-            .then_ignore(just('='))
-            .then(Ext(MetadataTableParser {}))
-            .repeated()
+    let field = name_parser()
+        .then_ignore(whitespace())
+        .then_ignore(just('='))
+        .then_ignore(whitespace())
+        .then(MetadataValue::parser());
 
-        let field_parser = text::ident()
-            .then_ignore(just('='))
-            .then(Ext(MetadataValueParser {}))
-            .then_ignore(just(';'));
-
-        field_parser
-            .repeated()
-            .map(|fields: Vec<(String, MetadataField)>| {
-                let mut map = HashMap::new();
-                for (key, value) in fields {
-                    map.insert(key, value);
-                }
-                MetadataTable { fields: map }
-            })
-            .delimited_by(just('{'), just('}'))
-    }
-}
+    field
+        .separated_by(separator)
+        .allow_leading()
+        .allow_trailing()
+        .collect::<Vec<_>>()
+        .delimited_by(
+            just('{').then(whitespace()),
+            whitespace().then(just('}'))
+        )
+        .map(|fields| MetadataTable {
+            fields: fields.into_iter().collect()
+        })
+});
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct MetadataBlock(pub MetadataTable);
 
-impl AstFormatInternal for MetadataBlock {
-    fn format_internal(&self, output: &mut FormattedAst) {
-        let _ = output;
-        crate::ast_fmt!(output,
-            ["Meta" blue], ["[" cyan], (self.name.node), ["]" cyan], '=', (self.table)
-        )
-    }
-}
-
-
-
-crate::parser! {
-    MetadataParser(inp) -> Result<MetadataBlock> {
-        // Implementation of the parser goes here
-        unimplemented!()
-    }
-}
+parser!(for: MetadataBlock {
+    just("pixelscript")
+        .then_ignore(just('='))
+        .then(MetadataTable::parser())
+        .map(|(_, table)| MetadataBlock(table))
+});
+    

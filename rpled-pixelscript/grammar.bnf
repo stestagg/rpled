@@ -78,6 +78,7 @@ exp            ::= literal
                  | exp binop exp
                  | unop exp
                  | tableconstructor
+                 | functioncall
 
 explist        ::= exp { "," exp }
                  

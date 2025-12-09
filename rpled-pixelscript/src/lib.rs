@@ -1,5 +1,5 @@
 pub mod ast;
-pub mod parser;
+pub mod parsers;
 pub mod error;
 pub mod ast_format;
 

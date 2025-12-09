@@ -1,7 +1,4 @@
-use crate::ast::Spanned;
-use chumsky::input::InputRef;
-use chumsky::prelude::*;
-use chumsky::extension::v1::{ExtParser, Ext};
+use super::prelude::*;
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -27,82 +24,68 @@ impl std::fmt::Display for Constant {
     }
 }
 
-crate::parser! {
-    ConstantParser(inp) -> Result<Constant> {
-        let number = text::int(10)
-            .to_slice()
-            .from_str()
-            .unwrapped()
-            .map(Constant::Num);
+parser!(for: Constant {
+    let digits = text::digits(10).to_slice();
+    let frac = just('.').then(digits);
+    let exp = just('e')
+        .or(just('E'))
+        .then(one_of("+-").or_not())
+        .then(digits);
 
-        let exponent = one_of("eE")
-            .then(one_of("+-").or_not())
-            .then(text::int(10))
-            .map(|((e, sign), digits)| {
-                let exp: i32 = digits.parse().unwrap();
-                if let Some(s) = sign {
-                    if s == '-' {
-                        -exp
-                    } else {
-                        exp
-                    }
-                } else {
-                    exp
-                }
-            });
+    let float = just('-').or_not()
+        .then(text::int(10))
+        .then(frac.or_not())
+        .then(exp.or_not())
+        .to_slice()
+        .map(|s: &str| Constant::Float(s.parse().unwrap()));
+        
+    let number = text::int(10)
+        .to_slice()
+        .from_str()
+        .unwrapped()
+        .map(Constant::Num);
 
-        let float = text::int(10)
-            .then(just('.').then(text::digits(10)).or_not())
-            .then(exponent.or_not())
-            .to_slice()
-            .from_str()
-            .unwrapped()
-            .map(Constant::Float);
+    let escape = just('\\').then(choice((
+        just('n').to('\n'),
+        just('r').to('\r'),
+        just('t').to('\t'),
+        just('"').to('"'),
+        just('\'').to('\''),
+        just('\\').to('\\'),
+        just('0').to('\0'),
+    )))
+    .ignored();
 
+    let double_string = none_of("\"")
+        .ignored()
+        .or(escape)
+        .repeated()
+        .to_slice()
+        .map(|s: &str| Constant::String(s.to_string()))
+        .delimited_by(just('"'), just('"'));
 
-        let escape = just('\\').then(choice((
-            just('n').to('\n'),
-            just('r').to('\r'),
-            just('t').to('\t'),
-            just('"').to('"'),
-            just('\'').to('\''),
-            just('\\').to('\\'),
-            just('0').to('\0'),
-        )))
-        .ignored();
+    let single_string = none_of("'")
+        .ignored()
+        .or(escape)
+        .repeated()
+        .to_slice()
+        .map(|s: &str| Constant::String(s.to_string()))
+        .delimited_by(just('\''), just('\''));
 
-        let double_string = none_of("\"")
-            .ignored()
-            .or(escape)
-            .repeated()
-            .to_slice()
-            .map(Constant::String)
-            .delimited_by(just('"'), just('"'));
+    let string = double_string.or(single_string);
 
-        let single_string = none_of("'")
-            .ignored()
-            .or(escape)
-            .repeated()
-            .to_slice()
-            .map(Constant::String)
-            .delimited_by(just('\''), just('\''));
+    let boolean = choice((
+        just("true").to(Constant::True),
+        just("false").to(Constant::False),
+    ));
 
-        let string = double_string.or(single_string);
+    let nil = just("nil").to(Constant::Nil);
 
-        let boolean = choice((
-            just("true").to(Constant::True),
-            just("false").to(Constant::False),
-        ));
-
-        let nil = just("nil").to(Constant::Nil);
-
-        let constant = choice((
-            float,
-            number,
-            string,
-            boolean,
-            nil,
-        ));
-        constant.parse(inp)
-    }
-}
+    choice((
+        float,
+        number,
+        string,
+        boolean,
+        nil,
+    ))
+});
