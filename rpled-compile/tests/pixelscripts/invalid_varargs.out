@@ -1,4 +1,8 @@
-Successfully parsed pixelscript
-Found pixelscript: name='InvalidVarargs', modules=["LED"], entrypoint='main'
-Failed to convert to pixelscript: Unsupported Lua features detected:
-  - Variable argument functions (...) are not supported
+Failed to parse pixelscript file: Parse error:
+[31mError:[0m Parse error
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0mtests/pixelscripts\invalid_varargs.pxl:2:5[38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m2 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[31mn[0m[38;5;249ma[0m[38;5;249mm[0m[38;5;249me[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0m[38;5;249m"[0m[38;5;249mI[0m[38;5;249mn[0m[38;5;249mv[0m[38;5;249ma[0m[38;5;249ml[0m[38;5;249mi[0m[38;5;249md[0m[38;5;249mV[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mg[0m[38;5;249ms[0m[38;5;249m"[0m[38;5;249m,[0m
+ [38;5;240m  │[0m     [31m┬[0m  
+ [38;5;240m  │[0m     [31m╰[0m[31m─[0m[31m─[0m Expected identifier, 'RParen', but found Dot
+[38;5;246m───╯[0m

@@ -25,30 +25,32 @@ fn parse_fixture(data: &str) -> ParsedFixture {
 
 #[rstest]
 fn test_fixtures(#[files("testprogs/*.pxs")] path: PathBuf) {
+    // Disable colors in error output for consistent test comparisons
+    std::env::set_var("NO_COLOR", "1");
+
     let fixture_data = std::fs::read_to_string(&path)
         .unwrap_or_else(|e| panic!("Failed to read fixture {:?}: {}", path, e));
 
     let parsed_fixture = parse_fixture(&fixture_data);
 
+    // Use a relative path for the filename to make tests portable across machines
+    let filename = format!("testprogs/{}", path.file_name().unwrap().to_str().unwrap());
+
     // Try to parse the program
     let result = parse_program(
-        path.to_str().unwrap(),
+        &filename,
         &parsed_fixture.source
     );
 
     let actual_output = match result {
         Ok(program) => {
-            // Successfully parsed - format the AST with 2-space inden            
+            // Successfully parsed - format the AST with 2-space inden
             let output = program.node.format(AstFormatOptions::new(2).with_color(false));
             output.to_string()
         }
         Err(err) => {
-            // Parse or lex error
-            if err.contains("Lexical error") {
-                "LEX ERROR".to_string()
-            } else {
-                "PARSE ERROR".to_string()
-            }
+            // Parse or lex error - return the nicely formatted error message
+            err
         }
     };
 

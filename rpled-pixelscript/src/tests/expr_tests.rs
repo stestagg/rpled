@@ -1,15 +1,14 @@
 use crate::lexer::lex;
 use crate::parsers::expr::expr;
-use crate::ast::{Expr, BinOp, UnOp, Literal};
+use crate::ast::{Expr, BinOp, UnOp, Literal, PrefixExpr};
 use chumsky::Parser;
+use crate::tests::make_spanned_input;
 
 #[test]
 fn test_parse_literal_expr() {
     let source = "42";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
@@ -24,9 +23,7 @@ fn test_parse_literal_expr() {
 fn test_parse_variable() {
     let source = "foo";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::Var(name) = result.unwrap().node {
@@ -40,9 +37,7 @@ fn test_parse_variable() {
 fn test_parse_binary_add() {
     let source = "1 + 2";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::BinaryOp(binop) = result.unwrap().node {
@@ -57,9 +52,7 @@ fn test_operator_precedence_mul_before_add() {
     // 1 + 2 * 3 should parse as 1 + (2 * 3)
     let source = "1 + 2 * 3";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let parsed = result.unwrap();
@@ -91,9 +84,7 @@ fn test_operator_precedence_parens() {
     // (1 + 2) * 3 should parse with addition first
     let source = "(1 + 2) * 3";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let parsed = result.unwrap();
@@ -122,9 +113,7 @@ fn test_right_associative_power() {
     // 2 ^ 3 ^ 4 should parse as 2 ^ (3 ^ 4)
     let source = "2 ^ 3 ^ 4";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let parsed = result.unwrap();
@@ -155,9 +144,7 @@ fn test_right_associative_power() {
 fn test_unary_minus() {
     let source = "-5";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::UnaryOp(unop) = result.unwrap().node {
@@ -171,9 +158,7 @@ fn test_unary_minus() {
 fn test_unary_not() {
     let source = "not true";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::UnaryOp(unop) = result.unwrap().node {
@@ -196,9 +181,7 @@ fn test_comparison_operators() {
 
     for (source, expected_op) in test_cases {
         let tokens = lex(source).unwrap();
-        let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-        let (result, errors) = expr().parse(&token_slice).into_output_errors();
+        let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
         assert!(errors.is_empty(), "Parse errors for '{}': {:?}", source, errors);
 
         if let Expr::BinaryOp(binop) = result.unwrap().node {
@@ -213,9 +196,7 @@ fn test_comparison_operators() {
 fn test_logical_operators() {
     let source = "true and false or true";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     // Should parse as (true and false) or true
@@ -238,9 +219,7 @@ fn test_logical_operators() {
 fn test_function_call() {
     let source = "foo(1, 2)";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::FunctionCall(call) = result.unwrap().node {
@@ -254,9 +233,7 @@ fn test_function_call() {
 fn test_index_expression() {
     let source = "arr[5]";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::Index(_) = result.unwrap().node {
@@ -270,9 +247,7 @@ fn test_index_expression() {
 fn test_table_constructor_empty() {
     let source = "{}";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::TableConstructor(tc) = result.unwrap().node {
@@ -286,9 +261,7 @@ fn test_table_constructor_empty() {
 fn test_table_constructor_values() {
     let source = r#"{1, 2, "three"}"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::TableConstructor(tc) = result.unwrap().node {
@@ -302,9 +275,7 @@ fn test_table_constructor_values() {
 fn test_table_constructor_named_fields() {
     let source = r#"{name = "test", count = 5}"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Expr::TableConstructor(tc) = result.unwrap().node {
@@ -318,9 +289,77 @@ fn test_table_constructor_named_fields() {
 fn test_complex_expression() {
     let source = "x + y * 2 - foo(a, b) / 3";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = expr().parse(&token_slice).into_output_errors();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
+}
+
+#[test]
+fn test_qualified_name_variable() {
+    let source = "math.PI";
+    let tokens = lex(source).unwrap();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+    if let Expr::QualifiedName(parts) = result.unwrap().node {
+        assert_eq!(parts, vec!["math".to_string(), "PI".to_string()]);
+    } else {
+        panic!("Expected qualified name");
+    }
+}
+
+#[test]
+fn test_qualified_function_call() {
+    let source = "math.sin(x)";
+    let tokens = lex(source).unwrap();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+    if let Expr::FunctionCall(call) = result.unwrap().node {
+        assert_eq!(call.args.len(), 1);
+        if let PrefixExpr::QualifiedName(parts) = &call.func.node {
+            assert_eq!(parts, &vec!["math".to_string(), "sin".to_string()]);
+        } else {
+            panic!("Expected qualified name in function call");
+        }
+    } else {
+        panic!("Expected function call");
+    }
+}
+
+#[test]
+fn test_multi_level_qualified_function_call() {
+    let source = "a.b.c(1, 2)";
+    let tokens = lex(source).unwrap();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+    if let Expr::FunctionCall(call) = result.unwrap().node {
+        assert_eq!(call.args.len(), 2);
+        if let PrefixExpr::QualifiedName(parts) = &call.func.node {
+            assert_eq!(parts, &vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+        } else {
+            panic!("Expected qualified name in function call");
+        }
+    } else {
+        panic!("Expected function call");
+    }
+}
+
+#[test]
+fn test_qualified_name_indexing() {
+    let source = "table.field[0]";
+    let tokens = lex(source).unwrap();
+    let (result, errors) = expr().parse(make_spanned_input(&tokens)).into_output_errors();
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+    if let Expr::Index(idx) = result.unwrap().node {
+        if let PrefixExpr::QualifiedName(parts) = &idx.base.node {
+            assert_eq!(parts, &vec!["table".to_string(), "field".to_string()]);
+        } else {
+            panic!("Expected qualified name as index base");
+        }
+    } else {
+        panic!("Expected index expression");
+    }
 }

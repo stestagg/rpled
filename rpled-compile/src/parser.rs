@@ -1,38 +1,44 @@
 use anyhow::{Context, Result};
-use luaparse::ast::Block;
+use rpled_pixelscript::{parse_program, ast::{Program, MetadataBlock}, Spanned};
 use std::fs;
 use std::path::Path;
 
 #[derive(Debug)]
-pub struct ParsedLua<'a> {
-    pub ast: Block<'a>,
+pub struct ParsedProgram {
+    pub program: Spanned<Program>,
     pub source: String,
+    pub filename: String,
 }
 
-impl<'a> ParsedLua<'a> {
-    pub fn from_file(path: &Path) -> Result<ParsedLua<'static>> {
+impl ParsedProgram {
+    pub fn from_file(path: &Path) -> Result<Self> {
         log::debug!("Reading file: {}", path.display());
         let source = fs::read_to_string(path)
             .with_context(|| format!("Failed to read file: {}", path.display()))?;
 
-        log::debug!("Parsing {} bytes of Lua code", source.len());
-
-        // Leak the string to get a 'static lifetime
-        let source_static = Box::leak(source.into_boxed_str());
-        ParsedLua::from_source(source_static)
+        let filename = path.display().to_string();
+        Self::from_source(&filename, source)
     }
 
-    pub fn from_source(source: &'static str) -> Result<ParsedLua<'static>> {
-        let ast = luaparse::parse(source).map_err(|e| {
-            anyhow::anyhow!("Failed to parse pixelscript file: {}", e)
-        })?;
+    pub fn from_source(filename: &str, source: String) -> Result<Self> {
+        log::debug!("Parsing {} bytes of pixelscript code", source.len());
+
+        // Parse using rpled-pixelscript
+        let program = parse_program(filename, &source)
+            .map_err(|e| anyhow::anyhow!("Parse error:\n{}", e))?;
 
         log::info!("Successfully parsed pixelscript");
-        log::debug!("AST statements: {}", ast.statements.len());
+        log::debug!("Program statements: {}", program.node.block.statements.len());
 
-        Ok(ParsedLua {
-            ast,
-            source: source.to_string(),
+        Ok(Self {
+            program,
+            source,
+            filename: filename.to_string(),
         })
+    }
+
+    // Helper to access metadata
+    pub fn metadata(&self) -> &MetadataBlock {
+        &self.program.node.metadata.node
     }
 }

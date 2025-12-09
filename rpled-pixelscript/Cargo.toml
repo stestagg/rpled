@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chumsky = { version = "1.0.0-alpha.8", features = ["pratt"] }
-ariadne = "0.4"
+chumsky = { version = "1.0.0-alpha.8", features = ["pratt", "extension"] }
+ariadne = { version = "0.4", features = ["concolor"] }
 yansi = { version = "1.0.1", features=["detect-tty", "detect-env"] }
 
 [dev-dependencies]

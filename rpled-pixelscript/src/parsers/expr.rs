@@ -1,15 +1,19 @@
 use chumsky::prelude::*;
 use chumsky::pratt::{left, right, prefix, infix};
-use chumsky::input::MapExtra;
+use chumsky::input::{MapExtra, ValueInput};
+use chumsky::span::SimpleSpan;
 use crate::ast::{
     Expr, Spanned, BinaryOp, UnaryOp, BinOp, UnOp, PrefixExpr, IndexExpr,
     FunctionCall, TableConstructor, TableField,
 };
 use crate::lexer::Token;
-use super::{common::ident, literal::literal};
+use super::{common::{ident, qualname}, literal::literal};
 
 /// Parser for expressions with proper operator precedence using Pratt parsing
-pub fn expr<'src>() -> impl Parser<'src, &'src [Token], Spanned<Expr>, extra::Err<Rich<'src, Token>>> + Clone {
+pub fn expr<'tokens, 'src: 'tokens, I>() -> impl Parser<'tokens, I, Spanned<Expr>, extra::Err<Rich<'tokens, Token>>> + Clone
+where
+    I: ValueInput<'tokens, Token = Token, Span = SimpleSpan>,
+{
     recursive(|expr| {
         // Atom parsers: the basic building blocks of expressions
         let atom = choice((
@@ -24,10 +28,16 @@ pub fn expr<'src>() -> impl Parser<'src, &'src [Token], Spanned<Expr>, extra::Er
             // Table constructors
             table_constructor().map(|tc| Expr::TableConstructor(tc.node)),
 
-            // Variables (identifiers)
-            select! { Token::Ident(s) => Expr::Var(s.clone()) },
+            // Variables and qualified names
+            qualname().map(|qn| {
+                if qn.node.len() == 1 {
+                    Expr::Var(qn.node[0].clone())
+                } else {
+                    Expr::QualifiedName(qn.node)
+                }
+            }),
         ))
-        .map_with(|e, ex: &mut MapExtra<'src, '_, &'src [Token], _>| {
+        .map_with(|e, ex: &mut MapExtra<'tokens, '_, I, _>| {
             Spanned::new(e, ex.span().into_range())
         });
 
@@ -57,8 +67,11 @@ pub fn expr<'src>() -> impl Parser<'src, &'src [Token], Spanned<Expr>, extra::Er
                             // Convert to PrefixExpr
                             let prefix_expr = match acc.node {
                                 Expr::Var(name) => PrefixExpr::Var(name),
-                                Expr::Parenthesized(e) => PrefixExpr::Parenthesized(e),
-                                _ => PrefixExpr::Parenthesized(Box::new(acc.clone())),
+                                Expr::QualifiedName(parts) => PrefixExpr::QualifiedName(parts),
+                                _ => {
+                                    // Can't index non-name expressions
+                                    return acc;
+                                }
                             };
                             let end = index.span.end;
                             Spanned::new(
@@ -73,8 +86,11 @@ pub fn expr<'src>() -> impl Parser<'src, &'src [Token], Spanned<Expr>, extra::Er
                             // Convert to PrefixExpr for function call
                             let prefix_expr = match acc.node {
                                 Expr::Var(name) => PrefixExpr::Var(name),
-                                Expr::Parenthesized(e) => PrefixExpr::Parenthesized(e),
-                                _ => PrefixExpr::Parenthesized(Box::new(acc.clone())),
+                                Expr::QualifiedName(parts) => PrefixExpr::QualifiedName(parts),
+                                _ => {
+                                    // Can't call non-name expressions
+                                    return acc;
+                                }
                             };
                             let end = args.last().map(|a| a.span.end).unwrap_or(span.end);
                             Spanned::new(
@@ -202,21 +218,27 @@ fn make_binop(lhs: Spanned<Expr>, op: BinOp, rhs: Spanned<Expr>) -> Spanned<Expr
 }
 
 /// Parser for table constructors
-pub fn table_constructor<'src>() -> impl Parser<'src, &'src [Token], Spanned<TableConstructor>, extra::Err<Rich<'src, Token>>> + Clone {
+pub fn table_constructor<'tokens, 'src: 'tokens, I>() -> impl Parser<'tokens, I, Spanned<TableConstructor>, extra::Err<Rich<'tokens, Token>>> + Clone
+where
+    I: ValueInput<'tokens, Token = Token, Span = SimpleSpan>,
+{
     table_field()
         .separated_by(just(Token::Comma))
         .allow_trailing()
         .collect()
         .delimited_by(just(Token::LBrace), just(Token::RBrace))
         .map(|fields| TableConstructor { fields })
-        .map_with(|tc, e: &mut MapExtra<'src, '_, &'src [Token], _>| {
+        .map_with(|tc, e: &mut MapExtra<'tokens, '_, I, _>| {
             Spanned::new(tc, e.span().into_range())
         })
         .labelled("table constructor")
 }
 
 /// Parser for table fields
-fn table_field<'src>() -> impl Parser<'src, &'src [Token], Spanned<TableField>, extra::Err<Rich<'src, Token>>> + Clone {
+fn table_field<'tokens, 'src: 'tokens, I>() -> impl Parser<'tokens, I, Spanned<TableField>, extra::Err<Rich<'tokens, Token>>> + Clone
+where
+    I: ValueInput<'tokens, Token = Token, Span = SimpleSpan>,
+{
     choice((
         // [literal] = literal (indexed field)
         literal()
@@ -234,7 +256,7 @@ fn table_field<'src>() -> impl Parser<'src, &'src [Token], Spanned<TableField>, 
         // literal (positional value)
         literal().map(|lit| TableField::Value(lit)),
     ))
-    .map_with(|field, e: &mut MapExtra<'src, '_, &'src [Token], _>| {
+    .map_with(|field, e: &mut MapExtra<'tokens, '_, I, _>| {
         Spanned::new(field, e.span().into_range())
     })
     .labelled("table field")

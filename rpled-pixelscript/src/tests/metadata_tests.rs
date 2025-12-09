@@ -2,14 +2,13 @@ use crate::lexer::lex;
 use crate::parsers::metadata::metadata_block;
 use crate::ast::{MetadataField, Literal};
 use chumsky::Parser;
+use crate::tests::make_spanned_input;
 
 #[test]
 fn test_parse_simple_metadata() {
     let source = r#"pixelscript = { name = "Test" }"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = metadata_block().parse(&token_slice).into_output_errors();
+    let (result, errors) = metadata_block().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some(), "No parse result");
 
@@ -22,9 +21,7 @@ fn test_parse_simple_metadata() {
 fn test_parse_metadata_with_multiple_fields() {
     let source = r#"pixelscript = { name = "Test", entrypoint = "main" }"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = metadata_block().parse(&token_slice).into_output_errors();
+    let (result, errors) = metadata_block().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let block = result.unwrap();
@@ -43,9 +40,7 @@ fn test_parse_metadata_with_multiple_fields() {
 fn test_parse_metadata_with_list() {
     let source = r#"pixelscript = { modules = {"LED", "TIME"} }"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = metadata_block().parse(&token_slice).into_output_errors();
+    let (result, errors) = metadata_block().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let block = result.unwrap();
@@ -65,9 +60,7 @@ fn test_parse_metadata_with_list() {
 fn test_parse_metadata_with_call() {
     let source = r#"config = { params = ("brightness", "speed") }"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = metadata_block().parse(&token_slice).into_output_errors();
+    let (result, errors) = metadata_block().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let block = result.unwrap();
@@ -87,9 +80,7 @@ fn test_parse_metadata_with_call() {
 fn test_parse_metadata_with_numbers() {
     let source = r#"config = { count = 10, rate = 3.14 }"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = metadata_block().parse(&token_slice).into_output_errors();
+    let (result, errors) = metadata_block().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     let block = result.unwrap();
@@ -116,9 +107,7 @@ fn test_parse_metadata_with_numbers() {
 fn test_parse_metadata_with_bools() {
     let source = r#"config = { enabled = true, debug = false }"#;
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = metadata_block().parse(&token_slice).into_output_errors();
+    let (result, errors) = metadata_block().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 }

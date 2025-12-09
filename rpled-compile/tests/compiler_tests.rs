@@ -1,4 +1,4 @@
-use rpled_compile::parser::ParsedLua;
+use rpled_compile::parser::ParsedProgram;
 use rpled_compile::script::ParsedScript;
 use rstest::*;
 use std::path::PathBuf;
@@ -10,17 +10,17 @@ fn test_pixelscripts(#[files("tests/pixelscripts/*.pxl")] path: PathBuf) {
     let expected_output = std::fs::read_to_string(&expected_file)
         .unwrap_or_else(|_| panic!("Missing .out file for {:?}", path));
 
-    // Parse the Lua file
+    // Parse the pixelscript file
     let mut actual_output = Vec::new();
 
-    let lua_result = ParsedLua::from_file(&path);
+    let program_result = ParsedProgram::from_file(&path);
 
-    match lua_result {
-        Ok(lua) => {
+    match program_result {
+        Ok(program) => {
             actual_output.push("Successfully parsed pixelscript".to_string());
 
-            // Try to convert to ParsedScript
-            match ParsedScript::from_lua(lua) {
+            // Try to extract metadata
+            match ParsedScript::from_program(program) {
                 Ok(script) => {
                     actual_output.push(format!(
                         "Found pixelscript: name='{}', modules={:?}, entrypoint='{}'",
@@ -38,7 +38,7 @@ fn test_pixelscripts(#[files("tests/pixelscripts/*.pxl")] path: PathBuf) {
             }
         }
         Err(e) => {
-            actual_output.push(format!("Failed to parse Lua file: {}", e));
+            actual_output.push(format!("Failed to parse pixelscript file: {}", e));
         }
     }
 

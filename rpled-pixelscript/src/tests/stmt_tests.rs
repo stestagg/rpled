@@ -1,15 +1,14 @@
 use crate::lexer::lex;
 use crate::parsers::stmt::statement;
-use crate::ast::{Statement, Assignment, WhileStmt, IfStmt, ForNumStmt, ForInStmt, FunctionDef, LocalDecl};
+use crate::ast::{Statement, Assignment, WhileStmt, IfStmt, ForNumStmt, ForInStmt, FunctionDef, LocalDecl, PrefixExpr};
 use chumsky::Parser;
+use crate::tests::make_spanned_input;
 
 #[test]
 fn test_parse_assignment() {
     let source = "x = 42";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
@@ -24,9 +23,7 @@ fn test_parse_assignment() {
 fn test_parse_function_call() {
     let source = "foo(1, 2)";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::FunctionCall(call) = result.unwrap().node {
@@ -40,9 +37,7 @@ fn test_parse_function_call() {
 fn test_parse_while_loop() {
     let source = "while x < 10 do x = x + 1 end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::While(WhileStmt { block, .. }) = result.unwrap().node {
@@ -56,9 +51,7 @@ fn test_parse_while_loop() {
 fn test_parse_if_statement() {
     let source = "if x > 5 then y = 1 end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::If(IfStmt { then_block, .. }) = result.unwrap().node {
@@ -72,9 +65,7 @@ fn test_parse_if_statement() {
 fn test_parse_if_else_statement() {
     let source = "if x > 5 then y = 1 else y = 0 end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::If(IfStmt { then_block, else_block, .. }) = result.unwrap().node {
@@ -90,9 +81,7 @@ fn test_parse_if_else_statement() {
 fn test_parse_if_elseif_statement() {
     let source = "if x > 10 then y = 2 elseif x > 5 then y = 1 else y = 0 end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::If(IfStmt { elseif_branches, .. }) = result.unwrap().node {
@@ -106,9 +95,7 @@ fn test_parse_if_elseif_statement() {
 fn test_parse_for_numeric() {
     let source = "for i = 1, 10 do sum = sum + i end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::ForNum(ForNumStmt { var, step, .. }) = result.unwrap().node {
@@ -123,9 +110,7 @@ fn test_parse_for_numeric() {
 fn test_parse_for_numeric_with_step() {
     let source = "for i = 1, 10, 2 do sum = sum + i end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::ForNum(ForNumStmt { step, .. }) = result.unwrap().node {
@@ -139,9 +124,7 @@ fn test_parse_for_numeric_with_step() {
 fn test_parse_for_in() {
     let source = "for x in items do print(x) end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::ForIn(ForInStmt { var, iterator, .. }) = result.unwrap().node {
@@ -156,9 +139,7 @@ fn test_parse_for_in() {
 fn test_parse_function_def() {
     let source = "function add(a, b) return a + b end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::FunctionDef(FunctionDef { name, params, block }) = result.unwrap().node {
@@ -174,9 +155,7 @@ fn test_parse_function_def() {
 fn test_parse_local_function_def() {
     let source = "local function helper(x) return x * 2 end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     matches!(result.unwrap().node, Statement::LocalFunctionDef(_));
@@ -186,9 +165,7 @@ fn test_parse_local_function_def() {
 fn test_parse_local_decl_with_value() {
     let source = "local x = 10";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::LocalDecl(LocalDecl { name, value }) = result.unwrap().node {
@@ -203,9 +180,7 @@ fn test_parse_local_decl_with_value() {
 fn test_parse_local_decl_without_value() {
     let source = "local x";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::LocalDecl(LocalDecl { value, .. }) = result.unwrap().node {
@@ -219,9 +194,7 @@ fn test_parse_local_decl_without_value() {
 fn test_parse_break() {
     let source = "break";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     matches!(result.unwrap().node, Statement::Break);
@@ -231,9 +204,7 @@ fn test_parse_break() {
 fn test_parse_do_block() {
     let source = "do x = 5 y = 10 end";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     if let Statement::DoBlock(block) = result.unwrap().node {
@@ -247,10 +218,57 @@ fn test_parse_do_block() {
 fn test_parse_repeat_until() {
     let source = "repeat x = x + 1 until x > 10";
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = statement().parse(&token_slice).into_output_errors();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
 
     matches!(result.unwrap().node, Statement::Repeat(_));
+}
+
+#[test]
+fn test_parse_qualified_function_call() {
+    let source = "led.set(1, 255)";
+    let tokens = lex(source).unwrap();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+    if let Statement::FunctionCall(call) = result.unwrap().node {
+        assert_eq!(call.args.len(), 2);
+        if let PrefixExpr::QualifiedName(parts) = &call.func.node {
+            assert_eq!(parts, &vec!["led".to_string(), "set".to_string()]);
+        } else {
+            panic!("Expected qualified name in function call");
+        }
+    } else {
+        panic!("Expected function call statement");
+    }
+}
+
+#[test]
+fn test_parse_multi_level_qualified_function_call() {
+    let source = "a.b.c(1, 2, 3)";
+    let tokens = lex(source).unwrap();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
+    assert!(errors.is_empty(), "Parse errors: {:?}", errors);
+
+    if let Statement::FunctionCall(call) = result.unwrap().node {
+        assert_eq!(call.args.len(), 3);
+        if let PrefixExpr::QualifiedName(parts) = &call.func.node {
+            assert_eq!(parts, &vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+        } else {
+            panic!("Expected qualified name in function call");
+        }
+    } else {
+        panic!("Expected function call statement");
+    }
+}
+
+#[test]
+fn test_qualified_assignment_fails() {
+    let source = "math.pi = 3.14";
+    let tokens = lex(source).unwrap();
+    let (result, errors) = statement().parse(make_spanned_input(&tokens)).into_output_errors();
+
+    // Should have errors because qualified names cannot be assigned
+    assert!(!errors.is_empty(), "Expected parse error for qualified assignment");
+    assert!(result.is_none(), "Should not produce a valid result");
 }

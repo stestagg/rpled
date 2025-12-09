@@ -452,6 +452,9 @@ impl AstFormatInternal for Expr {
             Expr::Var(name) => {
                 output.output(Painted::new(name.clone()));
             }
+            Expr::QualifiedName(parts) => {
+                output.output(Painted::new(parts.join(".")));
+            }
             Expr::Index(idx) => {
                 out!(output, (idx.base), (idx));
             }
@@ -482,8 +485,8 @@ impl AstFormatInternal for PrefixExpr {
             PrefixExpr::Var(name) => {
                 output.output(Painted::new(name.clone()));
             }
-            PrefixExpr::Parenthesized(e) => {
-                out!(output, ["("], (e), [")"]);
+            PrefixExpr::QualifiedName(parts) => {
+                output.output(Painted::new(parts.join(".")));
             }
         }
     }

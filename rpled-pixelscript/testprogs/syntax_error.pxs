@@ -5,4 +5,10 @@ pixelscript = {
 x =
 
 === OUTPUT ===
-PARSE ERROR
+Error: Parse error
+   ╭─[testprogs/syntax_error.pxs:1:10]
+   │
+ 1 │ pixelscript = {
+   │          │ 
+   │          ╰─ Expected 'Minus', 'Not', literal, 'LParen', table constructor, qualified name, but found end of input
+───╯

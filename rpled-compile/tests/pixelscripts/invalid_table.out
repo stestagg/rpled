@@ -1,4 +1,4 @@
 Successfully parsed pixelscript
 Found pixelscript: name='InvalidTable', modules=["LED"], entrypoint='main'
-Failed to convert to pixelscript: Unsupported Lua features detected:
-  - Table constructors are not supported
+Lua feature check passed
+Successfully processed pixelscript 'InvalidTable'

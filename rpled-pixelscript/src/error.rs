@@ -1,5 +1,6 @@
 use ariadne::{Color, Label, Report, ReportKind, Source};
 use chumsky::error::Rich;
+use chumsky::prelude::*;
 use crate::lexer::{Token, LexError};
 
 /// Format lexer errors using ariadne
@@ -77,19 +78,25 @@ pub fn format_parse_errors(filename: &str, source: &str, errors: &[Rich<Token>])
 
 /// Convenience function to parse a complete program and format any errors
 pub fn parse_program(filename: &str, source: &str) -> Result<crate::ast::Spanned<crate::ast::Program>, String> {
-    use chumsky::Parser;
 
     // Lex the source
-    let tokens = match crate::lexer::lex(source) {
-        Ok(tokens) => tokens,
-        Err(error) => {
-            return Err(format_lex_error(filename, source, &error));
-        }
-    };
+    let (tokens, mut errs) = lexer().parse(src.as_str()).into_output_errors();
 
-    // Parse the tokens
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-    let (result, errors) = crate::parser::program().parse(&token_slice).into_output_errors();
+    // let tokens = match crate::lexer::lex(source) {
+    //     Ok(tokens) => tokens,
+    //     Err(error) => {
+    //         return Err(format_lex_error(filename, source, &error));
+    //     }
+    // };
+
+    // Parse the tokens - create input preserving original spans
+    let end_span = tokens.last()
+        .map(|t| t.span.end..t.span.end)
+        .unwrap_or(0..0);
+
+    let (result, errors) = crate::parser::program()
+        .parse(tokens.as_slice().map(end_span.into(), |spanned| (&spanned.node, SimpleSpan::from(spanned.span.clone()))))
+        .into_output_errors();
 
     if !errors.is_empty() {
         return Err(format_parse_errors(filename, source, &errors));

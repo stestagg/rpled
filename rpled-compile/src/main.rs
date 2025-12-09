@@ -4,7 +4,7 @@ use std::path::PathBuf;
 mod parser;
 mod script;
 
-use parser::ParsedLua;
+use parser::ParsedProgram;
 use script::ParsedScript;
 
 #[derive(Parser, Debug)]
@@ -36,9 +36,9 @@ struct Args {
     #[arg(long)]
     dump: bool,
 
-    /// Dump the Lua AST after parsing and exit
+    /// Dump the AST after parsing and exit
     #[arg(long)]
-    dump_lua_ast: bool,
+    dump_ast: bool,
 
     /// Target VM memory size in KB (4, 8, or 16)
     #[arg(long, value_name = "KB", default_value = "8")]
@@ -96,26 +96,26 @@ fn main() {
     log::info!("Target VM memory size: {}KB", args.memory_size);
     log::info!("Dump bytecode: {}", args.dump);
 
-    // Parse the Lua file
-    let lua = match ParsedLua::from_file(&args.input) {
-        Ok(l) => l,
+    // Parse the pixelscript file
+    let program = match ParsedProgram::from_file(&args.input) {
+        Ok(p) => p,
         Err(e) => {
-            log::error!("Failed to parse Lua file: {:#}", e);
+            log::error!("Failed to parse pixelscript file: {:#}", e);
             std::process::exit(1);
         }
     };
 
-    // If dump-lua-ast is set, output the AST and exit
-    if args.dump_lua_ast {
-        println!("{:#?}", lua.ast);
+    // If dump-ast is set, output the AST and exit
+    if args.dump_ast {
+        println!("{:#?}", program.program);
         std::process::exit(0);
     }
 
-    // Convert to ParsedScript (extracts header and checks for unsupported features)
-    let script = match ParsedScript::from_lua(lua) {
+    // Extract pixelscript metadata
+    let script = match ParsedScript::from_program(program) {
         Ok(s) => s,
         Err(e) => {
-            log::error!("Failed to convert to pixelscript: {:#}", e);
+            log::error!("Failed to extract metadata: {:#}", e);
             std::process::exit(1);
         }
     };

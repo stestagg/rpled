@@ -228,3 +228,51 @@ fn test_lex_error_unexpected_char() {
     let result = lex("@");
     assert!(result.is_err());
 }
+
+#[test]
+fn test_lex_qualified_names() {
+    let result = lex("foo.bar").unwrap();
+    let tokens: Vec<_> = result.iter().map(|t| &t.node).collect();
+    assert_eq!(
+        tokens,
+        vec![&Token::Ident("foo".to_string()), &Token::Dot, &Token::Ident("bar".to_string())]
+    );
+}
+
+#[test]
+fn test_lex_qualified_names_multi_level() {
+    let result = lex("a.b.c").unwrap();
+    let tokens: Vec<_> = result.iter().map(|t| &t.node).collect();
+    assert_eq!(
+        tokens,
+        vec![
+            &Token::Ident("a".to_string()),
+            &Token::Dot,
+            &Token::Ident("b".to_string()),
+            &Token::Dot,
+            &Token::Ident("c".to_string())
+        ]
+    );
+}
+
+#[test]
+fn test_lex_dot_vs_float() {
+    // Test that 123.456 is a float
+    let result = lex("123.456").unwrap();
+    let tokens: Vec<_> = result.iter().map(|t| &t.node).collect();
+    assert_eq!(tokens.len(), 1);
+    assert!(matches!(tokens[0], Token::Float(_)));
+
+    // Test that foo.bar has a dot token
+    let result2 = lex("foo.bar").unwrap();
+    let tokens2: Vec<_> = result2.iter().map(|t| &t.node).collect();
+    assert_eq!(tokens2[1], &Token::Dot);
+
+    // Test that 123. followed by identifier is number then dot then identifier
+    let result3 = lex("123.foo").unwrap();
+    let tokens3: Vec<_> = result3.iter().map(|t| &t.node).collect();
+    assert_eq!(tokens3.len(), 3);
+    assert!(matches!(tokens3[0], Token::Number(123)));
+    assert_eq!(tokens3[1], &Token::Dot);
+    assert_eq!(tokens3[2], &Token::Ident("foo".to_string()));
+}

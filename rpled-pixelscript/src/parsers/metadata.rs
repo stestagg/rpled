@@ -1,11 +1,15 @@
 use chumsky::prelude::*;
-use chumsky::input::MapExtra;
+use chumsky::input::{MapExtra, ValueInput};
+use chumsky::span::SimpleSpan;
 use crate::ast::{MetadataBlock, MetadataField, MetadataTable, Spanned};
 use crate::lexer::Token;
 use super::{common::ident, literal::literal};
 
 /// Parser for a single metadata field (with recursion support)
-pub fn metadata_field<'src>() -> impl Parser<'src, &'src [Token], Spanned<MetadataField>, extra::Err<Rich<'src, Token>>> + Clone {
+pub fn metadata_field<'tokens, 'src: 'tokens, I>() -> impl Parser<'tokens, I, Spanned<MetadataField>, extra::Err<Rich<'tokens, Token>>> + Clone
+where
+    I: ValueInput<'tokens, Token = Token, Span = SimpleSpan>,
+{
     recursive(|field| {
         ident()
             .then_ignore(just(Token::Assign))
@@ -53,7 +57,7 @@ pub fn metadata_field<'src>() -> impl Parser<'src, &'src [Token], Spanned<Metada
                 // Finally literal: name = value
                 literal().map(|lit| FieldValue::Literal(lit)),
             )))
-            .map_with(|(name, value), e: &mut MapExtra<'src, '_, &'src [Token], _>| {
+            .map_with(|(name, value), e: &mut MapExtra<'tokens, '_, I, _>| {
                 let span = e.span().into_range();
                 let field = match value {
                     FieldValue::Literal(lit) => MetadataField::Literal { name, value: lit },
@@ -75,24 +79,30 @@ pub fn metadata_field<'src>() -> impl Parser<'src, &'src [Token], Spanned<Metada
 }
 
 /// Parser for metadata table
-pub fn metadata_table<'src>() -> impl Parser<'src, &'src [Token], Spanned<MetadataTable>, extra::Err<Rich<'src, Token>>> + Clone {
+pub fn metadata_table<'tokens, 'src: 'tokens, I>() -> impl Parser<'tokens, I, Spanned<MetadataTable>, extra::Err<Rich<'tokens, Token>>> + Clone
+where
+    I: ValueInput<'tokens, Token = Token, Span = SimpleSpan>,
+{
     metadata_field()
         .separated_by(just(Token::Comma))
         .allow_trailing()
         .collect()
         .delimited_by(just(Token::LBrace), just(Token::RBrace))
         .map(|fields| MetadataTable { fields })
-        .map_with(|table, e: &mut MapExtra<'src, '_, &'src [Token], _>| Spanned::new(table, e.span().into_range()))
+        .map_with(|table, e: &mut MapExtra<'tokens, '_, I, _>| Spanned::new(table, e.span().into_range()))
         .labelled("metadata table")
 }
 
 /// Parser for metadata block (the entire header)
-pub fn metadata_block<'src>() -> impl Parser<'src, &'src [Token], Spanned<MetadataBlock>, extra::Err<Rich<'src, Token>>> + Clone {
+pub fn metadata_block<'tokens, 'src: 'tokens, I>() -> impl Parser<'tokens, I, Spanned<MetadataBlock>, extra::Err<Rich<'tokens, Token>>> + Clone
+where
+    I: ValueInput<'tokens, Token = Token, Span = SimpleSpan>,
+{
     ident()
         .then_ignore(just(Token::Assign))
         .then(metadata_table())
         .map(|(name, table)| MetadataBlock { name, table })
-        .map_with(|block, e: &mut MapExtra<'src, '_, &'src [Token], _>| Spanned::new(block, e.span().into_range()))
+        .map_with(|block, e: &mut MapExtra<'tokens, '_, I, _>| Spanned::new(block, e.span().into_range()))
         .labelled("metadata block")
 }
 

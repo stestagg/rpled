@@ -1,42 +1,42 @@
-Name ::= ( Letter | "_" ) { Letter | Digit | "_" }
+Name ::= ( Letter | "_" ) { Letter | Digit | "_" }              ✓
 
 Letter ::= "A" … "Z" | "a" … "z"
 Digit  ::= "0" … "9"
 Number ::= Digit { Digit }
 
-Float ::= Digit { Digit } "." Digit { Digit } [Exponent]
-         | Digit { Digit } Exponent
-Exponent ::= ("e" | "E") [ "+" | "-" ] Digit { Digit }
+Float ::= Digit { Digit } "." Digit { Digit } [Exponent]        ✓
+         | Digit { Digit } Exponent                             ✓
+Exponent ::= ("e" | "E") [ "+" | "-" ] Digit { Digit }          ✓
 
-String ::= "\"" { StringChar } "\"" 
-         | "'"  { StringChar } "'"
+String ::= "\"" { StringChar } "\""                             ✓
+         | "'"  { StringChar } "'"                              ✓
 
-StringChar ::= any_char_except(["\"", newline])
-             | "\" EscapeSequence
+StringChar ::= any_char_except(["\"", newline])                 ✓
+             | "\" EscapeSequence                               ✓
 
-EscapeSequence ::= "\"" | "'" | "\" | "n" | "r" | "t" | "0"
+EscapeSequence ::= "\"" | "'" | "\" | "n" | "r" | "t" | "0"     ✓
 
 ---
 
-program        ::= metadata_block block
+program        ::= metadata_block block                         ✓
 
-metadata_block ::= Name "=" metadata_table
+metadata_block ::= Name "=" metadata_table                      ✓     
 
-metadata_table ::= "{" { metadata_field } "}"
+metadata_table ::= "{" { metadata_field } "}"                   ✓ 
 
-metadata_field ::= 
+metadata_field ::=                                              ✓
         Name "=" literal                    |
         Name "=" metadata_table             |
-        Name "=" "(" metadata_args ")"      |
+        Name "=" Name "(" metadata_args ")" |
         Name "=" "{" metadata_list "}"
 
-metadata_list  ::= literal { "," literal }
+metadata_list  ::= literal { "," literal }                      ✓
 
-metadata_args  ::= literal { "," literal }
+metadata_args  ::= literal { "," literal }                      ✓
 
-block          ::= { stat [";"] } [ laststat [";"] ]
+block          ::= { stat [";"] } [ laststat [";"] ]            ✓
 
-stat           ::= assignment
+stat           ::= assignment                                   ✓
                  | functioncall
                  | do block end
                  | while exp do block end
@@ -48,19 +48,19 @@ stat           ::= assignment
                  | localfunctiondef
                  | localdecl
 
-assignment     ::= Name "=" exp
+assignment     ::= Name "=" exp                                 ✓ 
 
-functiondef    ::= "function" Name funcbody
-localfunctiondef ::= "local" "function" Name funcbody
-localdecl      ::= "local" Name [ "=" exp ]
+functiondef    ::= "function" Name funcbody                     ✓
+localfunctiondef ::= "local" "function" Name funcbody           ✓ 
+localdecl      ::= "local" Name [ "=" exp ]                     ✓
 
-laststat       ::= "return" [exp] | "break"
+laststat       ::= "return" [exp] | "break"                     ✓
 
-functioncall   ::= prefixexp args
+qualname       ::= Name { "." Name }                            
 
-indexexp ::= prefixexp "[" exp "]"
+functioncall   ::= qualname args
 
-prefixexp      ::= Name | "(" exp ")"
+indexexp       ::= qualname "[" exp "]"
 
 args           ::= "(" [ explist ] ")"           
 
@@ -73,7 +73,7 @@ field ::= `[´ literal `]´ `=´ literal  |  Name `=´ literal  | literal
 namelist       ::= Name { "," Name }
 
 exp            ::= literal
-                 | prefixexp
+                 | qualname
                  | indexexp
                  | exp binop exp
                  | unop exp
@@ -88,4 +88,4 @@ binop          ::= "+" | "-" | "*" | "/" | "%" | "^"
 
 unop           ::= "-" | "not"
 
-literal        ::= Number | String | "true" | "false" | "nil"
+literal        ::= Number | String | "true" | "false" | "nil" ✓

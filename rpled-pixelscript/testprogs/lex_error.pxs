@@ -3,4 +3,10 @@ pixelscript = {
 }
 
 === OUTPUT ===
-LEX ERROR
+Error: Lexical error
+   ╭─[testprogs/lex_error.pxs:2:12]
+   │
+ 2 │     name = "unterminated string
+   │            ┬  
+   │            ╰── Unterminated string literal
+───╯

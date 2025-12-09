@@ -1,18 +1,6 @@
 use std::fmt;
 
-pub type Span = std::ops::Range<usize>;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Spanned<T> {
-    pub node: T,
-    pub span: Span,
-}
-
-impl<T> Spanned<T> {
-    pub fn new(node: T, span: Span) -> Self {
-        Self { node, span }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Program {
@@ -161,6 +149,7 @@ pub struct ReturnStmt {
 pub enum Expr {
     Literal(Literal),
     Var(String),
+    QualifiedName(Vec<String>),
     Index(IndexExpr),
     Parenthesized(Box<Spanned<Expr>>),
     BinaryOp(BinaryOp),
@@ -178,7 +167,7 @@ pub struct IndexExpr {
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrefixExpr {
     Var(String),
-    Parenthesized(Box<Spanned<Expr>>),
+    QualifiedName(Vec<String>),
 }
 
 #[derive(Debug, Clone, PartialEq)]

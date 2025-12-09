@@ -2,6 +2,7 @@ use crate::lexer::lex;
 use crate::parser::program;
 use crate::ast::Program;
 use chumsky::Parser;
+use crate::tests::make_spanned_input;
 use indoc::indoc;
 
 #[test]
@@ -13,9 +14,7 @@ fn test_parse_minimal_program() {
     "#};
 
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = program().parse(&token_slice).into_output_errors();
+    let (result, errors) = program().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
@@ -37,9 +36,7 @@ fn test_parse_program_with_code() {
     "#};
 
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = program().parse(&token_slice).into_output_errors();
+    let (result, errors) = program().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
@@ -62,9 +59,7 @@ fn test_parse_program_with_function() {
     "#};
 
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = program().parse(&token_slice).into_output_errors();
+    let (result, errors) = program().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
@@ -89,9 +84,7 @@ fn test_parse_program_with_loops() {
     "#};
 
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = program().parse(&token_slice).into_output_errors();
+    let (result, errors) = program().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
@@ -111,9 +104,7 @@ fn test_parse_program_with_return() {
     "#};
 
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = program().parse(&token_slice).into_output_errors();
+    let (result, errors) = program().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
@@ -151,9 +142,7 @@ fn test_parse_complex_program() {
     "#};
 
     let tokens = lex(source).unwrap();
-    let token_slice: Vec<_> = tokens.iter().map(|t| t.node.clone()).collect();
-
-    let (result, errors) = program().parse(&token_slice).into_output_errors();
+    let (result, errors) = program().parse(make_spanned_input(&tokens)).into_output_errors();
     assert!(errors.is_empty(), "Parse errors: {:?}", errors);
     assert!(result.is_some());
 
