@@ -16,6 +16,27 @@ macro_rules! parser {
             $body
         }
     };
+    (for: $ast_type:ty, recursing: $($rec_name:ident: $rec_type:ty),* $body:block)  => {
+        impl crate::ast::NodeParser for $ast_type {
+            fn parser<'a>() -> impl chumsky::Parser<'a, &'a str, Self, crate::ast::Extra<'a>> + Clone
+            where
+                Self: Sized,
+            {
+                let $($rec_name),* = ($(<$rec_type>::parser()),*);
+                $body
+            }
+        }
+        // For each recursive paramter:
+        $(impl $ast_type {
+            paste::paste! {
+                pub fn [<parser_with_ $rec_name>]< 'a>($rec_name: impl chumsky::Parser<'a, &'a str, $rec_type, crate::ast::Extra<'a>> + Clone) -> impl chumsky::Parser<'a, &'a str, Self, crate::ast::Extra<'a>> + Clone {
+                    $body
+                }
+            }
+        })*
+        // 
+
+    }
 }
 pub(crate) use parser;
 

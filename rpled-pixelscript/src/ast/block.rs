@@ -5,9 +5,9 @@ pub struct Block {
     pub statements: Vec<Statement>
 }
 
-parser!(for: Block {
+parser!(for: Block, recursing: statement: Statement {
     whitespace()
-        .ignore_then(Statement::parser())
+        .ignore_then(statement)
         .then_ignore(whitespace())
         .separated_by(one_of(";\n").then(whitespace()))
         .collect::<Vec<_>>()

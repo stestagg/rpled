@@ -957,6 +957,7 @@ dependencies = [
  "ariadne",
  "chumsky",
  "indoc",
+ "paste",
  "pretty_assertions",
  "rstest 0.23.0",
  "yansi",

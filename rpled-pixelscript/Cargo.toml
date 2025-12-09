@@ -7,6 +7,7 @@ edition = "2024"
 chumsky = { version = "1.0.0-alpha.8", features = ["pratt", "extension"] }
 ariadne = { version = "0.4", features = ["concolor"] }
 yansi = { version = "1.0.1", features=["detect-tty", "detect-env"] }
+paste = "1.0.15"
 
 [dev-dependencies]
 indoc = "2.0"

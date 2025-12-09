@@ -145,12 +145,13 @@ pub enum Statement {
 }
 
 parser!(for: Statement {
+    recursive(|statement| {
         choice((
             assignment_parser()
                 .map(|(local, name, value)| Statement::Assignment { target: name, value, local }),
             call_parser(Expression::parser())
                 .map(|(name, args)| Statement::FunctionCall { name, args }),
-            Block::parser()
+            Block::parser_with_statement(statement.clone())
                 .map(|block| Statement::Block(Box::new(block)))
                 .boxed(),
             while_parser().boxed(),
@@ -160,8 +161,8 @@ parser!(for: Statement {
             for_num_parser().boxed(),
             function_def_parser().boxed(),
         ))
-    }
-);
+    })
+});
 
 // Formatting implementation
 impl AstFormat for Statement {

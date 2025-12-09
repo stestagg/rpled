@@ -15,7 +15,7 @@ parser!(for: MetadataValue {
     recursive(|mv| {
         choice((
             // Try nested table first (starts with { and contains name = value pairs)
-            metadata_table_parser(mv.clone())
+            MetadataTable::parser_with_metadata_value(mv.clone())
                 .map(|table| MetadataValue::Nested(Box::new(table))),
 
             // Function call: name(arg1, arg2, ...)
@@ -44,7 +44,7 @@ pub struct MetadataTable {
     pub fields: HashMap<String, MetadataValue>,
 }
 
-fn metadata_table_parser<'a>(mv: impl Parser<'a, &'a str, MetadataValue, Extra<'a>> + Clone) -> impl Parser<'a, &'a str, MetadataTable, Extra<'a>> + Clone {
+parser!(for: MetadataTable, recursing: metadata_value: MetadataValue {
     let separator = choice((
         newline().repeated().at_least(1).ignored(),
         just(';').then(whitespace()).ignored(),
@@ -54,7 +54,7 @@ fn metadata_table_parser<'a>(mv: impl Parser<'a, &'a str, MetadataValue, Extra<'
         .then_ignore(whitespace())
         .then_ignore(just('='))
         .then_ignore(whitespace())
-        .then(mv);
+        .then(metadata_value);
 
     field
         .separated_by(separator)
@@ -68,10 +68,6 @@ fn metadata_table_parser<'a>(mv: impl Parser<'a, &'a str, MetadataValue, Extra<'
         .map(|fields| MetadataTable {
             fields: fields.into_iter().collect()
         })
-}
-
-parser!(for: MetadataTable {
-    metadata_table_parser(MetadataValue::parser())
 });
 
 #[derive(Clone, Debug, PartialEq)]
