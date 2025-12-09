@@ -2,7 +2,6 @@ use chumsky::prelude::*;
 use chumsky::text::whitespace;
 
 use crate::ast::{expr::Expression, program::Program};
-use chumsky::extension::v1::{ExtParser, Ext};
 use crate::ast::NodeParser as _;
 use crate::ast::Extra;
 

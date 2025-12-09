@@ -12,12 +12,12 @@ pub enum Expression {
     TableDef(Vec<(Expression, Expression)>),
 }
 
-fn table_def_parser<'a>() -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
-    Expression::parser()
+fn table_def_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
+    expr.clone()
         .then_ignore(whitespace())
         .then_ignore(just('='))
         .then_ignore(whitespace())
-        .then(Expression::parser())
+        .then(expr)
         .separated_by(just(',').then(whitespace()))
         .allow_trailing()
         .collect::<Vec<_>>()
@@ -28,14 +28,14 @@ fn table_def_parser<'a>() -> impl Parser<'a, &'a str, Expression, Extra<'a>> + C
         .map(Expression::TableDef)
 }
 
-fn unary_op_parser<'a>() -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
+fn unary_op_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
     choice((
         just('-').to_slice(),
         just("not").to_slice(),
     ))
     .map(|s: &str| s.to_string())
     .then_ignore(whitespace())
-    .then(Expression::parser())
+    .then(expr)
     .map(|(op, expr)| Expression::UnaryOp {
         op,
         expr: Box::new(expr),
@@ -49,11 +49,11 @@ parser!(for: Expression {
                 .map(Expression::Constant),
             name_parser()
                 .map(Expression::Variable),
-            call_parser(expr)
+            call_parser(expr.clone())
                 .map(|(name, args)| Expression::FunctionCall { name, args }),
-            unary_op_parser(),
+            unary_op_parser(expr.clone()),
             // BinaryOp - TODO: need proper precedence handling
-            table_def_parser(),
+            table_def_parser(expr.clone()),
         ))
     })
 });
