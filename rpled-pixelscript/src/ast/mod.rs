@@ -29,7 +29,7 @@ macro_rules! parser {
         // For each recursive paramter:
         $(impl $ast_type {
             paste::paste! {
-                pub fn [<parser_with_ $rec_name>]< 'a>($rec_name: impl chumsky::Parser<'a, &'a str, $rec_type, crate::ast::Extra<'a>> + Clone) -> impl chumsky::Parser<'a, &'a str, Self, crate::ast::Extra<'a>> + Clone {
+                pub fn [<parser_with_ $rec_name>]< 'a>($rec_name: impl chumsky::Parser<'a, &'a str, $rec_type, crate::ast::Extra<'a>> + Clone + 'a) -> impl chumsky::Parser<'a, &'a str, Self, crate::ast::Extra<'a>> + Clone {
                     $body
                 }
             }

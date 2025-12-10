@@ -936,10 +936,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rpled-compiler"
-version = "0.1.0"
-
-[[package]]
 name = "rpled-debug"
 version = "0.1.0"
 dependencies = [

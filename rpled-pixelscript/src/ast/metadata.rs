@@ -45,10 +45,6 @@ pub struct MetadataTable {
 }
 
 parser!(for: MetadataTable, recursing: metadata_value: MetadataValue {
-    let separator = choice((
-        newline().repeated().at_least(1).ignored(),
-        just(';').then(whitespace()).ignored(),
-    ));
 
     let field = name_parser()
         .then_ignore(whitespace())
@@ -57,8 +53,7 @@ parser!(for: MetadataTable, recursing: metadata_value: MetadataValue {
         .then(metadata_value);
 
     field
-        .separated_by(separator)
-        .allow_leading()
+        .separated_by(just(',').then(whitespace()))
         .allow_trailing()
         .collect::<Vec<_>>()
         .delimited_by(
@@ -75,7 +70,9 @@ pub struct MetadataBlock(pub MetadataTable);
 
 parser!(for: MetadataBlock {
     just("pixelscript")
+        .then_ignore(whitespace())
         .then_ignore(just('='))
+        .then_ignore(whitespace())
         .then(MetadataTable::parser())
         .map(|(_, table)| MetadataBlock(table))
 });

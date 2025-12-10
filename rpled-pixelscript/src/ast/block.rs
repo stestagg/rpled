@@ -6,6 +6,11 @@ pub struct Block {
 }
 
 parser!(for: Block, recursing: statement: Statement {
+    let returnstat = just("return")
+        .then_ignore(whitespace())
+        .then(Expression::parser().or_not())
+        .map(|(_, expr)| Statement::Return { expr });
+
     whitespace()
         .ignore_then(statement)
         .then_ignore(whitespace())
@@ -14,9 +19,17 @@ parser!(for: Block, recursing: statement: Statement {
         .map(|statements| Block {
             statements
         })
-        .delimited_by(just('{'), just('}'))
-    }
-);
+        .then(
+            one_of(";\n").then(whitespace()).or_not()
+            .ignore_then(returnstat.or_not())
+        )
+        .map(|(mut block, ret)| {
+            if let Some(ret_stmt) = ret {
+                block.statements.push(ret_stmt);
+            }
+            block
+        })
+});
 
 // Formatting implementation
 impl AstFormat for Block {

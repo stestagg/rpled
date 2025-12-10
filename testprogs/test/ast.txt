@@ -1,0 +1,7 @@
+Error: Parse error
+   ╭─[testprogs/test.pxs:2:7]
+   │
+ 2 │     name = "InvalidFor",
+   │       ┬
+   │       ╰── Expected 'In', 'Assign', but found Comma
+───╯

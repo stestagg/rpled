@@ -1,0 +1,19 @@
+pixelscript = {
+    name = "fizzbuzz",
+    version = 1
+}
+
+-- FizzBuzz implementation
+fizz_count = 0
+buzz_count = 0
+fizzbuzz_count = 0
+
+for i = 1, 30 do
+    if i % 15 == 0 then
+        fizzbuzz_count = fizzbuzz_count + 1
+    elseif i % 3 == 0 then
+        fizz_count = fizz_count + 1
+    elseif i % 5 == 0 then
+        buzz_count = buzz_count + 1
+    end
+end

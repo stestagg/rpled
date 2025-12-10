@@ -7,22 +7,22 @@ pub struct ConditionalBranch {
 }
 
 // Helper parser for if/elseif branches
-fn conditional_branch_parser<'a>() -> impl Parser<'a, &'a str, ConditionalBranch, Extra<'a>> + Clone {
+fn conditional_branch_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, ConditionalBranch, Extra<'a>> + Clone {
     Expression::parser()
         .then_ignore(whitespace())
         .then_ignore(just("then"))
         .then_ignore(whitespace())
-        .then(Block::parser().boxed())
+        .then(Block::parser_with_statement(statement).boxed())
         .map(|(condition, block)| ConditionalBranch { condition, block: Box::new(block) })
 }
 
-fn if_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
+fn if_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
     just("if").ignored()
-        .then(conditional_branch_parser())
+        .then(conditional_branch_parser(statement.clone()))
         .then(
             just("elseif").ignored()
                 .then_ignore(whitespace())
-                .then(conditional_branch_parser())
+                .then(conditional_branch_parser(statement.clone()))
                 .map(|(_, branch)| branch)
                 .repeated()
                 .collect::<Vec<_>>()
@@ -30,7 +30,7 @@ fn if_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
         .then(
             just("else").ignored()
                 .then_ignore(whitespace())
-                .then(Block::parser().boxed())
+                .then(Block::parser_with_statement(statement).boxed())
                 .map(|(_, block)| block)
                 .or_not()
         )
@@ -43,7 +43,7 @@ fn if_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
         })
 }
 
-fn for_in_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
+fn for_in_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
     just("for")
         .then_ignore(whitespace())
         .then(name_parser())
@@ -52,11 +52,15 @@ fn for_in_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone
         .then_ignore(whitespace())
         .then(name_parser())
         .then_ignore(whitespace())
-        .then(Block::parser().boxed())
+        .then_ignore(just("do"))
+        .then_ignore(whitespace())
+        .then(Block::parser_with_statement(statement).boxed())
+        .then_ignore(whitespace())
+        .then_ignore(just("end"))
         .map(|(((_, name), iter), block)| Statement::ForIn { name, iter, block: Box::new(block) })
 }
 
-fn for_num_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
+fn for_num_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
     just("for")
         .then_ignore(whitespace())
         .then(name_parser())
@@ -76,7 +80,11 @@ fn for_num_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clon
                 .or_not()
         )
         .then_ignore(whitespace())
-        .then(Block::parser().boxed())
+        .then_ignore(just("do"))
+        .then_ignore(whitespace())
+        .then(Block::parser_with_statement(statement).boxed())
+        .then_ignore(whitespace())
+        .then_ignore(just("end"))
         .map(|(((((_, name), start), end), step), block)| Statement::ForNum {
             name,
             start,
@@ -86,7 +94,7 @@ fn for_num_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clon
         })
 }
 
-fn function_def_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone{
+fn function_def_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone{
     just("local")
         .or_not()
         .map(|v| v.is_some())
@@ -96,12 +104,14 @@ fn function_def_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> +
         .then(name_parser())
         .then(
             name_parser()
-                .separated_by(just(','))
+                .separated_by(just(',').then_ignore(whitespace()))
                 .collect::<Vec<_>>()
                 .delimited_by(just('('), just(')'))
         )
         .then_ignore(whitespace())
-        .then(Block::parser().boxed())
+        .then(Block::parser_with_statement(statement).boxed())
+        .then_ignore(whitespace())
+        .then_ignore(just("end"))
         .map(|(((local, name), params), block)| Statement::FunctionDef {
             name,
             params,
@@ -110,19 +120,23 @@ fn function_def_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> +
         })
 }
 
-fn while_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
+fn while_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
     just("while")
         .then_ignore(whitespace())
         .then(Expression::parser())
         .then_ignore(whitespace())
-        .then(Block::parser().boxed())
+        .then_ignore(just("do"))
+        .then_ignore(whitespace())
+        .then(Block::parser_with_statement(statement).boxed())
+        .then_ignore(whitespace())
+        .then_ignore(just("end"))
         .map(|((_, cond), block)| Statement::WhileLoop { cond, block: Box::new(block) })
 }
 
-fn repeat_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone{
+fn repeat_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone{
     just("repeat")
         .then_ignore(whitespace())
-        .then(Block::parser().boxed())
+        .then(Block::parser_with_statement(statement).boxed())
         .then_ignore(whitespace())
         .then_ignore(just("until"))
         .then_ignore(whitespace())
@@ -142,6 +156,7 @@ pub enum Statement {
     ForIn {name: String, iter: String, block: Box<Block>},
     ForNum {name: String, start: Expression, end: Expression, step: Option<Expression>, block: Box<Block>},
     FunctionDef {name: String, params: Vec<String>, block: Box<Block>, local: bool}, 
+    Return { expr: Option<Expression> },
 }
 
 parser!(for: Statement {
@@ -151,15 +166,19 @@ parser!(for: Statement {
                 .map(|(local, name, value)| Statement::Assignment { target: name, value, local }),
             call_parser(Expression::parser())
                 .map(|(name, args)| Statement::FunctionCall { name, args }),
-            Block::parser_with_statement(statement.clone())
-                .map(|block| Statement::Block(Box::new(block)))
+            just("do").ignored()
+                .then_ignore(whitespace())
+                .then(Block::parser_with_statement(statement.clone()).boxed())
+                .then_ignore(whitespace())
+                .then_ignore(just("end"))
+                .map(|(_, block)| Statement::Block(Box::new(block)))
                 .boxed(),
-            while_parser().boxed(),
-            repeat_parser().boxed(),
-            if_parser().boxed(),
-            for_in_parser().boxed(),
-            for_num_parser().boxed(),
-            function_def_parser().boxed(),
+            while_parser(statement.clone()).boxed(),
+            repeat_parser(statement.clone()).boxed(),
+            if_parser(statement.clone()).boxed(),
+            for_in_parser(statement.clone()).boxed(),
+            for_num_parser(statement.clone()).boxed(),
+            function_def_parser(statement.clone()).boxed(),
         ))
     })
 });
@@ -298,6 +317,13 @@ impl AstFormat for Statement {
                     f.separator();
                     f.field("block", |f| block.format_with_name(f));
                 });
+            }
+            Statement::Return { expr } => {
+                if let Some(expr) = expr {
+                    f.nested(|f| {
+                        expr.format_with_name(f);
+                    });
+                }
             }
         }
     }

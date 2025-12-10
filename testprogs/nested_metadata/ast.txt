@@ -1,15 +1,3 @@
-pixelscript = {
-    name = "complex",
-    resolution = (800, 600),
-    colors = {
-        fg = 255,
-        bg = 0
-    }
-}
-
-x = 1
-
-=== OUTPUT ===
 Program {
   Meta[pixelscript] = {
     name = "complex",

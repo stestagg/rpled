@@ -2,7 +2,7 @@
 resolver = "3"
 members = [
     "rpled-compile",
-    "rpled-compiler",
     "rpled-vm",
-    "rpled-debug", "rpled-pixelscript",
+    "rpled-debug",
+    "rpled-pixelscript",
 ]

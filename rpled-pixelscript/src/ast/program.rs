@@ -1,3 +1,5 @@
+use chumsky::extra::State;
+
 use super::prelude::*;
 use super::metadata::MetadataBlock;
 
@@ -12,7 +14,7 @@ pub struct Program {
 parser!(for: Program {
     MetadataBlock::parser()
         .then_ignore(whitespace())
-        .then(Block::parser())
+        .then(Block::parser_with_statement(Statement::parser()))
         .map(|(metadata, block)| Program {
             metadata,
             block,

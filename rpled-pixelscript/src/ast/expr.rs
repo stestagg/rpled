@@ -12,7 +12,7 @@ pub enum Expression {
     TableDef(Vec<(Expression, Expression)>),
 }
 
-fn table_def_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
+fn table_def_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
     expr.clone()
         .then_ignore(whitespace())
         .then_ignore(just('='))
@@ -28,7 +28,7 @@ fn table_def_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + 
         .map(Expression::TableDef)
 }
 
-fn unary_op_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
+fn unary_op_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
     choice((
         just('-').to_slice(),
         just("not").to_slice(),

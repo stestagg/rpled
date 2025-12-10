@@ -1,43 +1,30 @@
 use crate::ast::program::Program;
 use crate::ast::NodeParser;
+use crate::error::format_errors;
 use crate::format::{AstFormatWithName, FormatOptions};
 use chumsky::Parser;
 use pretty_assertions::assert_eq;
+use rstest::*;
 use std::path::PathBuf;
 
-const OUTPUT_SEPARATOR: &str = "=== OUTPUT ===";
-
-struct ParsedFixture {
-    source: String,
-    expected_output: String,
-}
-
-fn parse_fixture(data: &str) -> ParsedFixture {
-    let (source_section, output_section) = data
-        .rsplit_once(OUTPUT_SEPARATOR)
-        .expect("Fixture must contain '=== OUTPUT ===' separator");
-
-    ParsedFixture {
-        source: source_section.trim().to_string(),
-        // Normalize line endings to LF for consistent comparison
-        expected_output: output_section.trim().replace("\r\n", "\n"),
-    }
-}
-
-// Helper function to test a single fixture file
-fn test_fixture_file(path: PathBuf) {
+#[rstest]
+fn test_fixture(#[files("../testprogs/*/script.pxl")] script_path: PathBuf) {
     // Disable colors in error output for consistent test comparisons
     unsafe {
         std::env::set_var("NO_COLOR", "1");
     }
 
-    let fixture_data = std::fs::read_to_string(&path)
-        .unwrap_or_else(|e| panic!("Failed to read fixture {:?}: {}", path, e));
+    // Derive the ast.txt path from the script.pxl path
+    let ast_path = script_path.with_file_name("ast.txt");
 
-    let parsed_fixture = parse_fixture(&fixture_data);
+    let source = std::fs::read_to_string(&script_path)
+        .unwrap_or_else(|e| panic!("Failed to read script {:?}: {}", script_path, e));
+
+    let expected_output = std::fs::read_to_string(&ast_path)
+        .unwrap_or_else(|e| panic!("Failed to read expected output {:?}: {}", ast_path, e));
 
     // Try to parse the program
-    let result = Program::parser().parse(&parsed_fixture.source).into_result();
+    let result = Program::parser().parse(&source).into_result();
 
     let actual_output = match result {
         Ok(program) => {
@@ -45,98 +32,28 @@ fn test_fixture_file(path: PathBuf) {
             program.format(FormatOptions::new(2).with_color(false))
         }
         Err(errs) => {
-            // Parse error - return the error message
-            format!("Parse errors: {:?}", errs)
+            // Parse error - format using ariadne
+            // Use a simplified file path for display (just the testprogs/... part)
+            let display_path = script_path
+                .to_string_lossy()
+                .replace("\\", "/")
+                .split("/")
+                .skip_while(|s| *s != "testprogs")
+                .collect::<Vec<_>>()
+                .join("/");
+
+            format_errors(&source, &display_path, errs)
         }
     };
 
+    // Normalize line endings for comparison
+    let expected_normalized = expected_output.trim().replace("\r\n", "\n");
+    let actual_normalized = actual_output.trim().replace("\r\n", "\n");
+
     assert_eq!(
-        actual_output.trim(),
-        parsed_fixture.expected_output.trim(),
+        actual_normalized,
+        expected_normalized,
         "Output did not match for fixture {:?}",
-        path
+        script_path
     );
-}
-
-#[test]
-fn test_fixture_simple() {
-    let path = PathBuf::from("testprogs/simple.pxs");
-    if path.exists() {
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_simple: file not found");
-    }
-}
-
-#[test]
-fn test_fixture_function() {
-    let path = PathBuf::from("testprogs/function.pxs");
-    if path.exists() {
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_function: file not found");
-    }
-}
-
-#[test]
-fn test_fixture_loops() {
-    let path = PathBuf::from("testprogs/loops.pxs");
-    if path.exists() {
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_loops: file not found");
-    }
-}
-
-#[test]
-fn test_fixture_fizzbuzz() {
-    let path = PathBuf::from("testprogs/fizzbuzz.pxs");
-    if path.exists() {
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_fizzbuzz: file not found");
-    }
-}
-
-#[test]
-fn test_fixture_comprehensive() {
-    let path = PathBuf::from("testprogs/comprehensive.pxs");
-    if path.exists() {
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_comprehensive: file not found");
-    }
-}
-
-#[test]
-fn test_fixture_nested_metadata() {
-    let path = PathBuf::from("testprogs/nested_metadata.pxs");
-    if path.exists() {
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_nested_metadata: file not found");
-    }
-}
-
-// Error test fixtures
-#[test]
-fn test_fixture_lex_error() {
-    let path = PathBuf::from("testprogs/lex_error.pxs");
-    if path.exists() {
-        // This should produce an error
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_lex_error: file not found");
-    }
-}
-
-#[test]
-fn test_fixture_syntax_error() {
-    let path = PathBuf::from("testprogs/syntax_error.pxs");
-    if path.exists() {
-        // This should produce an error
-        test_fixture_file(path);
-    } else {
-        println!("Skipping test_fixture_syntax_error: file not found");
-    }
 }
