@@ -16,6 +16,7 @@ StringChar ::= any_char_except(["\"", newline])
 
 EscapeSequence ::= "\"" | "'" | "\" | "n" | "r" | "t" | "0"
 
+Comment ::= "--" { any_char_except(newline) } newline
 ---
 
 program        ::= metadata_block block

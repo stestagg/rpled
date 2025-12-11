@@ -1,0 +1,5 @@
+pixelscript = {
+    name = "simple comparison",
+}
+x = foo < bar
+y = baz >= qux

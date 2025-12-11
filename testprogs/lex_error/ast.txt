@@ -1,7 +1,7 @@
-Error: Lexical error
-   ╭─[testprogs/lex_error.pxs:2:12]
+Error: Parse error
+   ╭─[testprogs/lex_error/script.pxl:2:5]
    │
  2 │     name = "unterminated string
-   │            ┬
-   │            ╰── Unterminated string literal
+   │     ┬  
+   │     ╰── found 'n' expected whitespace, or '}'
 ───╯

@@ -30,7 +30,7 @@ macro_rules! parser {
         $(impl $ast_type {
             paste::paste! {
                 pub fn [<parser_with_ $rec_name>]< 'a>($rec_name: impl chumsky::Parser<'a, &'a str, $rec_type, crate::ast::Extra<'a>> + Clone + 'a) -> impl chumsky::Parser<'a, &'a str, Self, crate::ast::Extra<'a>> + Clone {
-                    $body
+                    $body.labelled(stringify!($ast_type))
                 }
             }
         })*
@@ -60,6 +60,9 @@ pub(crate) mod prelude {
     // Parser stuff
     pub(crate) use super::parser;
     pub use super::{NodeParser, Extra};
+
+    // Parser extensions
+    pub use crate::parser_ext::{InlinePadExt, inline_whitespace};
 
     // Common AST nodes
     pub use super::constant::Constant;

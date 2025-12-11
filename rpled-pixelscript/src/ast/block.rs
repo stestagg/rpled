@@ -6,22 +6,22 @@ pub struct Block {
 }
 
 parser!(for: Block, recursing: statement: Statement {
-    let returnstat = just("return")
-        .then_ignore(whitespace())
+    let returnstat = just("return").inlinepad()
         .then(Expression::parser().or_not())
         .map(|(_, expr)| Statement::Return { expr });
 
-    whitespace()
-        .ignore_then(statement)
-        .then_ignore(whitespace())
-        .separated_by(one_of(";\n").then(whitespace()))
+    statement
+        .separated_by(one_of(";\n").inlinepad())
         .collect::<Vec<_>>()
-        .map(|statements| Block {
-            statements
+        .map(|statements| {
+            Block {
+                statements
+            }
         })
         .then(
-            one_of(";\n").then(whitespace()).or_not()
-            .ignore_then(returnstat.or_not())
+            one_of(";\n").inlinepad()
+            .ignore_then(returnstat)
+            .or_not()
         )
         .map(|(mut block, ret)| {
             if let Some(ret_stmt) = ret {

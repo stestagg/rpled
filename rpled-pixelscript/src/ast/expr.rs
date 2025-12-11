@@ -1,5 +1,6 @@
 use super::prelude::*;
 use crate::parsers::{call_parser, name_parser};
+use chumsky::pratt::{infix, prefix, left, right};
 
 
 #[derive(Clone, Debug, PartialEq)]
@@ -14,47 +15,161 @@ pub enum Expression {
 
 fn table_def_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
     expr.clone()
-        .then_ignore(whitespace())
-        .then_ignore(just('='))
-        .then_ignore(whitespace())
+        .then_ignore(just('=').inlinepad())
         .then(expr)
-        .separated_by(just(',').then(whitespace()))
+        .separated_by(just(',').inlinepad())
         .allow_trailing()
         .collect::<Vec<_>>()
         .delimited_by(
-            just('{').then(whitespace()),
-            whitespace().then(just('}'))
+            just('{').then(inline_whitespace()),
+            inline_whitespace().then(just('}'))
         )
         .map(Expression::TableDef)
+        .labelled("table definition")
 }
 
-fn unary_op_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
-    choice((
-        just('-').to_slice(),
-        just("not").to_slice(),
+fn binary_op_parser<'a>(expr: impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Expression, Extra<'a>> + Clone {
+    // Atom parsers - these are the base expressions
+    let atom = choice((
+        Constant::parser()
+            .map(Expression::Constant),
+        call_parser(expr.clone())
+            .map(|(name, args)| Expression::FunctionCall { name, args }),
+        name_parser()
+            .map(Expression::Variable),
+        table_def_parser(expr.clone()),
+        expr.clone()
+            .delimited_by(
+                just('(').then(whitespace()),
+                whitespace().then(just(')'))
+            ),
+    ));
+
+    // Binary operators with precedence using Pratt parser
+    atom.pratt((
+        // Logical OR (lowest precedence)
+        infix(left(1), just("or").inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "or".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        // Logical AND
+        infix(left(2), just("and").inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "and".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        // Comparison operators
+        infix(left(3), just("<=").inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "<=".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(3), just(">=").inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: ">=".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(3), just("==").inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "==".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(3), just("~=").inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "~=".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(3), just('<').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "<".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(3), just('>').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: ">".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        // Addition and subtraction
+        infix(left(5), just('+').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "+".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(5), just('-').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "-".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        // Multiplication, division, modulo
+        infix(left(6), just('*').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "*".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(6), just('/').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "/".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        infix(left(6), just('%').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "%".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        // Exponentiation (right-associative, highest precedence)
+        infix(right(7), just('^').inlinepad(), |left, _, right, _| {
+            Expression::BinaryOp {
+                left: Box::new(left),
+                op: "^".to_string(),
+                right: Box::new(right),
+            }
+        }),
+        // Unary operators (prefix)
+        prefix(8, just('-').then(inline_whitespace()).to_slice(), |_, expr, _| {
+            Expression::UnaryOp {
+                op: "-".to_string(),
+                expr: Box::new(expr),
+            }
+        }),
+        prefix(8, just("not").then(inline_whitespace()).to_slice(), |_, expr, _| {
+            Expression::UnaryOp {
+                op: "not".to_string(),
+                expr: Box::new(expr),
+            }
+        }),
     ))
-    .map(|s: &str| s.to_string())
-    .then_ignore(whitespace())
-    .then(expr)
-    .map(|(op, expr)| Expression::UnaryOp {
-        op,
-        expr: Box::new(expr),
-    })
 }
 
 parser!(for: Expression {
     recursive(|expr| {
-        choice((
-            Constant::parser()
-                .map(Expression::Constant),
-            name_parser()
-                .map(Expression::Variable),
-            call_parser(expr.clone())
-                .map(|(name, args)| Expression::FunctionCall { name, args }),
-            unary_op_parser(expr.clone()),
-            // BinaryOp - TODO: need proper precedence handling
-            table_def_parser(expr.clone()),
-        ))
+        binary_op_parser(expr)
     })
 });
 
@@ -66,13 +181,13 @@ impl AstFormat for Expression {
             Expression::Constant(c) => c.format_with_name(f),
 
             Expression::Variable(name) => {
-                f.write("var".cyan());
+                f.write("Variable".cyan());
                 f.write_plain(": ");
                 f.write(name.white());
             }
 
             Expression::BinaryOp { left, op, right } => {
-                f.write("binop".cyan());
+                f.write("BinaryOp".cyan());
                 f.write_plain(": ");
                 f.nested(|f| {
                     left.format_with_name(f);
@@ -84,7 +199,7 @@ impl AstFormat for Expression {
             }
 
             Expression::UnaryOp { op, expr } => {
-                f.write("unop".cyan());
+                f.write("UnaryOp".cyan());
                 f.write_plain(": ");
                 f.nested(|f| {
                     f.write(op.blue());
@@ -94,7 +209,7 @@ impl AstFormat for Expression {
             }
 
             Expression::FunctionCall { name, args } => {
-                f.write("call".cyan());
+                f.write("FunctionCall".cyan());
                 f.write_plain(": ");
                 f.nested(|f| {
                     f.write(name.white());
@@ -107,7 +222,7 @@ impl AstFormat for Expression {
             }
 
             Expression::TableDef(fields) => {
-                f.write("table".cyan());
+                f.write("TableDef".cyan());
                 f.write_plain(": ");
                 f.write("{".green());
                 f.list(fields, |f, (key, value)| {

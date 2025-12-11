@@ -11,7 +11,8 @@ pub fn format_errors(
 
     for e in errors {
         Report::build(ReportKind::Error, file_path, e.span().start)
-            .with_message("Lexical error")
+            .with_message("Parse error")
+            .with_note(e.contexts().map(|(c, s)| c.to_string()).collect::<Vec<_>>().join("\n"))
             .with_label(
                 Label::new((file_path, e.span().into_range()))
                     .with_message(e.reason().to_string())

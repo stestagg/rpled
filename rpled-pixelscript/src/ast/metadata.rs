@@ -24,11 +24,10 @@ parser!(for: MetadataValue {
 
             // List of constants: { const, const, ... }
             Constant::parser()
-                .then_ignore(whitespace())
-                .separated_by(just(',').then(whitespace()))
+                .separated_by(just(',').inlinepad())
                 .allow_trailing()
                 .collect::<Vec<_>>()
-                .delimited_by(just('{').then(whitespace()), whitespace().then(just('}')))
+                .delimited_by(just('{').then(inline_whitespace()), inline_whitespace().then(just('}')))
                 .map(MetadataValue::List),
 
             // Plain constant (fallback)
@@ -47,13 +46,11 @@ pub struct MetadataTable {
 parser!(for: MetadataTable, recursing: metadata_value: MetadataValue {
 
     let field = name_parser()
-        .then_ignore(whitespace())
-        .then_ignore(just('='))
-        .then_ignore(whitespace())
+        .then_ignore(just('=').inlinepad())
         .then(metadata_value);
 
     field
-        .separated_by(just(',').then(whitespace()))
+        .separated_by(just(',').padded())
         .allow_trailing()
         .collect::<Vec<_>>()
         .delimited_by(
@@ -70,9 +67,7 @@ pub struct MetadataBlock(pub MetadataTable);
 
 parser!(for: MetadataBlock {
     just("pixelscript")
-        .then_ignore(whitespace())
-        .then_ignore(just('='))
-        .then_ignore(whitespace())
+        .then_ignore(just('=').inlinepad())
         .then(MetadataTable::parser())
         .map(|(_, table)| MetadataBlock(table))
 });

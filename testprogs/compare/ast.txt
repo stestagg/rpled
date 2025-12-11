@@ -1,0 +1,45 @@
+Program:[
+    metadata: MetadataBlock:[
+        MetadataTable:[
+            {name: MetadataValue:[
+                Constant:[
+                    String: "simple comparison"
+                ]
+            ]}
+        ]
+    ]
+    block: Block:[
+        {Statement:[
+            assign: [
+                x
+                Expression:[
+                    binop: [
+                        Expression:[
+                            var: foo
+                        ]
+                        <
+                        Expression:[
+                            var: bar
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        Statement:[
+            assign: [
+                y
+                Expression:[
+                    binop: [
+                        Expression:[
+                            var: baz
+                        ]
+                        >=
+                        Expression:[
+                            var: qux
+                        ]
+                    ]
+                ]
+            ]
+        ]}
+    ]
+]

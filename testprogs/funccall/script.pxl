@@ -1,0 +1,5 @@
+pixelscript = {
+    name = "funccall",
+}
+
+led.foo()

@@ -9,9 +9,7 @@ pub struct ConditionalBranch {
 // Helper parser for if/elseif branches
 fn conditional_branch_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, ConditionalBranch, Extra<'a>> + Clone {
     Expression::parser()
-        .then_ignore(whitespace())
-        .then_ignore(just("then"))
-        .then_ignore(whitespace())
+        .then_ignore(just("then").inlinepad())
         .then(Block::parser_with_statement(statement).boxed())
         .map(|(condition, block)| ConditionalBranch { condition, block: Box::new(block) })
 }
@@ -20,18 +18,14 @@ fn if_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clo
     just("if").ignored()
         .then(conditional_branch_parser(statement.clone()))
         .then(
-            just("elseif").ignored()
-                .then_ignore(whitespace())
-                .then(conditional_branch_parser(statement.clone()))
-                .map(|(_, branch)| branch)
+            just("elseif").inlinepad()
+                .ignore_then(conditional_branch_parser(statement.clone()))
                 .repeated()
                 .collect::<Vec<_>>()
         )
         .then(
-            just("else").ignored()
-                .then_ignore(whitespace())
-                .then(Block::parser_with_statement(statement).boxed())
-                .map(|(_, block)| block)
+            just("else").inlinepad()
+                .ignore_then(Block::parser_with_statement(statement).boxed())
                 .or_not()
         )
         .then_ignore(whitespace())
@@ -44,48 +38,36 @@ fn if_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clo
 }
 
 fn for_in_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
-    just("for")
-        .then_ignore(whitespace())
+    just("for").inlinepad()
+        .ignore_then(name_parser())
+        .then_ignore(just("in").inlinepad())
         .then(name_parser())
-        .then_ignore(whitespace())
-        .then_ignore(just("in"))
-        .then_ignore(whitespace())
-        .then(name_parser())
-        .then_ignore(whitespace())
-        .then_ignore(just("do"))
-        .then_ignore(whitespace())
+        .then_ignore(just("do").inlinepad())
         .then(Block::parser_with_statement(statement).boxed())
         .then_ignore(whitespace())
         .then_ignore(just("end"))
-        .map(|(((_, name), iter), block)| Statement::ForIn { name, iter, block: Box::new(block) })
+        .map(|((name, iter), block)| Statement::ForIn { name, iter, block: Box::new(block) })
 }
 
 fn for_num_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
-    just("for")
-        .then_ignore(whitespace())
+    just("for").inlinepad()
         .then(name_parser())
-        .then_ignore(whitespace())
-        .then_ignore(just('='))
-        .then_ignore(whitespace())
+        .then_ignore(just('=').inlinepad())
         .then(Expression::parser())
-        .then_ignore(whitespace())
-        .then_ignore(just(','))
-        .then_ignore(whitespace())
+        .then_ignore(just(',').inlinepad())
         .then(Expression::parser())
         .then(
-            just(',').ignored()
-                .then_ignore(whitespace())
-                .then(Expression::parser())
-                .map(|(_, expr)| expr)
-                .or_not()
+            just(',').inlinepad()                
+            .ignore_then(Expression::parser())
+            .or_not()
         )
-        .then_ignore(whitespace())
-        .then_ignore(just("do"))
-        .then_ignore(whitespace())
+        .map(|((((_, name), start), end), step)| (name, start, end, step))
+        .then_ignore(just("do").padded())
+        
         .then(Block::parser_with_statement(statement).boxed())
         .then_ignore(whitespace())
-        .then_ignore(just("end"))
-        .map(|(((((_, name), start), end), step), block)| Statement::ForNum {
+        .then_ignore(just("end").padded())
+        .map(|((name, start, end, step), block)| Statement::ForNum {
             name,
             start,
             end,
@@ -98,13 +80,11 @@ fn function_def_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<
     just("local")
         .or_not()
         .map(|v| v.is_some())
-        .then_ignore(whitespace())
-        .then_ignore(just("function"))
-        .then_ignore(whitespace())
+        .then_ignore(just("function").inlinepad())
         .then(name_parser())
         .then(
             name_parser()
-                .separated_by(just(',').then_ignore(whitespace()))
+                .separated_by(just(',').inlinepad())
                 .collect::<Vec<_>>()
                 .delimited_by(just('('), just(')'))
         )
@@ -121,27 +101,20 @@ fn function_def_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<
 }
 
 fn while_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
-    just("while")
-        .then_ignore(whitespace())
-        .then(Expression::parser())
-        .then_ignore(whitespace())
-        .then_ignore(just("do"))
-        .then_ignore(whitespace())
-        .then(Block::parser_with_statement(statement).boxed())
-        .then_ignore(whitespace())
-        .then_ignore(just("end"))
-        .map(|((_, cond), block)| Statement::WhileLoop { cond, block: Box::new(block) })
+    just("while").inlinepad()
+        .ignore_then(Expression::parser())
+        .then_ignore(just("do").padded())
+        .then(Block::parser_with_statement(statement).boxed())        
+        .then_ignore(just("end").padded())
+        .map(|(cond, block)| Statement::WhileLoop { cond, block: Box::new(block) })
 }
 
 fn repeat_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone{
-    just("repeat")
-        .then_ignore(whitespace())
-        .then(Block::parser_with_statement(statement).boxed())
-        .then_ignore(whitespace())
-        .then_ignore(just("until"))
-        .then_ignore(whitespace())
+    just("repeat").inlinepad()
+        .ignore_then(Block::parser_with_statement(statement).boxed())
+        .then_ignore(just("until").padded())
         .then(Expression::parser())
-        .map(|((_, block), cond)| Statement::RepeatLoop { cond, block: Box::new(block) })
+        .map(|(block, cond)| Statement::RepeatLoop { cond, block: Box::new(block) })
 }
 
 
@@ -166,12 +139,11 @@ parser!(for: Statement {
                 .map(|(local, name, value)| Statement::Assignment { target: name, value, local }),
             call_parser(Expression::parser())
                 .map(|(name, args)| Statement::FunctionCall { name, args }),
-            just("do").ignored()
-                .then_ignore(whitespace())
-                .then(Block::parser_with_statement(statement.clone()).boxed())
+            just("do").inlinepad()
+                .ignore_then(Block::parser_with_statement(statement.clone()).boxed())
                 .then_ignore(whitespace())
                 .then_ignore(just("end"))
-                .map(|(_, block)| Statement::Block(Box::new(block)))
+                .map(|block| Statement::Block(Box::new(block)))
                 .boxed(),
             while_parser(statement.clone()).boxed(),
             repeat_parser(statement.clone()).boxed(),

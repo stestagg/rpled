@@ -4,6 +4,7 @@ pixelscript = {
 }
 
 sum = 0
+sum = 2
 for i = 1, 10 do
     sum = sum + i
 end
