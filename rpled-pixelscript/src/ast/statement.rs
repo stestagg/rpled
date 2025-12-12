@@ -15,7 +15,7 @@ fn conditional_branch_parser<'a>(statement: impl Parser<'a, &'a str, Statement, 
 }
 
 fn if_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone + 'a) -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
-    just("if").ignored()
+    just("if").inlinepad().ignored()
         .then(conditional_branch_parser(statement.clone()))
         .then(
             just("elseif").inlinepad()
@@ -117,10 +117,18 @@ fn repeat_parser<'a>(statement: impl Parser<'a, &'a str, Statement, Extra<'a>> +
         .map(|(block, cond)| Statement::RepeatLoop { cond, block: Box::new(block) })
 }
 
+fn local_declaration_parser<'a>() -> impl Parser<'a, &'a str, Statement, Extra<'a>> + Clone {
+    just("local").inlinepad()
+        .ignore_then(name_parser())
+        .map(|name| Statement::LocalDeclaration { name })
+}
+
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Statement {
     Assignment { target: String, value: Expression, local: bool },
+    LocalDeclaration { name: String },
     FunctionCall {name: String, args: Vec<Expression>},
     Block(Box<Block>),
     WhileLoop {cond: Expression, block: Box<Block>},
@@ -130,11 +138,13 @@ pub enum Statement {
     ForNum {name: String, start: Expression, end: Expression, step: Option<Expression>, block: Box<Block>},
     FunctionDef {name: String, params: Vec<String>, block: Box<Block>, local: bool}, 
     Return { expr: Option<Expression> },
+    Comment { text: String },
 }
 
 parser!(for: Statement {
     recursive(|statement| {
         choice((
+            comment().labelled("comment").map(|text| Statement::Comment { text }),
             assignment_parser()
                 .map(|(local, name, value)| Statement::Assignment { target: name, value, local }),
             call_parser(Expression::parser())
@@ -144,13 +154,15 @@ parser!(for: Statement {
                 .then_ignore(whitespace())
                 .then_ignore(just("end"))
                 .map(|block| Statement::Block(Box::new(block)))
-                .boxed(),
-            while_parser(statement.clone()).boxed(),
-            repeat_parser(statement.clone()).boxed(),
-            if_parser(statement.clone()).boxed(),
-            for_in_parser(statement.clone()).boxed(),
-            for_num_parser(statement.clone()).boxed(),
-            function_def_parser(statement.clone()).boxed(),
+                .boxed()
+                .labelled("block"),
+            while_parser(statement.clone()).boxed().labelled("while loop"),
+            repeat_parser(statement.clone()).boxed().labelled("repeat loop"),
+            if_parser(statement.clone()).boxed().labelled("if statement"),
+            for_in_parser(statement.clone()).boxed().labelled("for-in loop"),
+            for_num_parser(statement.clone()).boxed().labelled("for-numeric loop"),
+            function_def_parser(statement.clone()).boxed().labelled("function definition"),
+            local_declaration_parser().labelled("local declaration"),
         ))
     })
 });
@@ -172,7 +184,13 @@ impl AstFormat for Statement {
                     value.format_with_name(f);
                 });
             }
-
+            Statement::LocalDeclaration { name } => {
+                f.write("local".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.write(name.white());
+                });
+            }
             Statement::FunctionCall { name, args } => {
                 f.write("call".cyan());
                 f.write_plain(": ");
@@ -296,6 +314,13 @@ impl AstFormat for Statement {
                         expr.format_with_name(f);
                     });
                 }
+            }
+            Statement::Comment { text } => {
+                f.write("comment".cyan());
+                f.write_plain(": ");
+                f.nested(|f| {
+                    f.write(text.yellow());
+                });
             }
         }
     }

@@ -34,15 +34,17 @@ parser!(for: Constant {
 
     let float = just('-').or_not()
         .then(text::int(10))
-        .then(frac.or_not())
+        .then(frac)
         .then(exp.or_not())
         .to_slice()
+        .labelled("float")
         .map(|s: &str| Constant::Float(s.parse().unwrap()));
         
     let number = text::int(10)
         .to_slice()
         .from_str()
         .unwrapped()
+        .labelled("number")
         .map(Constant::Num);
 
     let escape = just('\\').then(choice((
@@ -71,15 +73,16 @@ parser!(for: Constant {
         .to_slice()
         .map(|s: &str| Constant::String(s.to_string()))
         .delimited_by(just('\''), just('\''));
+        
 
-    let string = double_string.or(single_string);
+    let string = double_string.or(single_string).labelled("string");
 
     let boolean = choice((
-        just("true").to(Constant::True),
-        just("false").to(Constant::False),
+        just("true").labelled("true").to(Constant::True),
+        just("false").labelled("false").to(Constant::False),
     ));
 
-    let nil = just("nil").to(Constant::Nil);
+    let nil = just("nil").labelled("nil").to(Constant::Nil);
 
     choice((
         float,

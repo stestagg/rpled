@@ -1,16 +1,45 @@
-Program {
-  Meta[pixelscript] = {
-    name = "complex",
-    resolution(
-      800,
-      600,
-    ),
-    colors = {
-      fg = 255,
-      bg = 0,
-    },
-  },
-  Block = {
-    x = 1
-  }
-}
+Program:[
+    metadata: MetadataBlock:[
+        MetadataTable:[
+            {colors: MetadataValue:[
+                MetadataTable:[
+                    {bg: MetadataValue:[
+                        Constant:[
+                            Num: 0
+                        ]
+                    ],
+                    fg: MetadataValue:[
+                        Constant:[
+                            Num: 255
+                        ]
+                    ]}
+                ]
+            ],
+            name: MetadataValue:[
+                Constant:[
+                    String: "complex"
+                ]
+            ],
+            resolution: MetadataValue:[
+                list: {Constant:[
+                    Num: 800
+                ],
+                Constant:[
+                    Num: 600
+                ]}
+            ]}
+        ]
+    ]
+    block: Block:[
+        {Statement:[
+            assign: [
+                x
+                Expression:[
+                    Constant:[
+                        Num: 1
+                    ]
+                ]
+            ]
+        ]}
+    ]
+]

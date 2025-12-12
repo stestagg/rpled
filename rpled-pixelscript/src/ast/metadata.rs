@@ -66,10 +66,11 @@ parser!(for: MetadataTable, recursing: metadata_value: MetadataValue {
 pub struct MetadataBlock(pub MetadataTable);
 
 parser!(for: MetadataBlock {
-    just("pixelscript")
-        .then_ignore(just('=').inlinepad())
-        .then(MetadataTable::parser())
-        .map(|(_, table)| MetadataBlock(table))
+    whitespace()
+        .ignore_then(just("pixelscript"))
+        .ignore_then(just('=').inlinepad())
+        .ignore_then(MetadataTable::parser())
+        .map(MetadataBlock)
 });
 
 // Formatting implementations

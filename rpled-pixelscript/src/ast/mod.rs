@@ -38,7 +38,7 @@ macro_rules! parser {
 
     }
 }
-pub(crate) use parser;
+// pub(crate) use parser;
 
 pub mod constant;
 pub mod metadata;
@@ -58,11 +58,11 @@ pub(crate) mod prelude {
     pub use chumsky::text::*;
 
     // Parser stuff
-    pub(crate) use super::parser;
+    // pub(crate) use super::parser;
     pub use super::{NodeParser, Extra};
 
     // Parser extensions
-    pub use crate::parser_ext::{InlinePadExt, inline_whitespace};
+    pub use crate::parser_ext::{InlinePadExt, inline_whitespace, comment, lineend};
 
     // Common AST nodes
     pub use super::constant::Constant;

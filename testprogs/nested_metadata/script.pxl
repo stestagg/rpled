@@ -1,6 +1,6 @@
 pixelscript = {
     name = "complex",
-    resolution = (800, 600),
+    resolution = {800, 600},
     colors = {
         fg = 255,
         bg = 0

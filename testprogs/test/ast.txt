@@ -1,7 +1,7 @@
 Error: Parse error
-   ╭─[testprogs/test.pxs:2:7]
+   ╭─[testprogs/test/script.pxl:8:10]
    │
- 2 │     name = "InvalidFor",
-   │       ┬
-   │       ╰── Expected 'In', 'Assign', but found Comma
+ 8 │     for k, v in pairs({1, 2, 3}) do
+   │          ┬  
+   │          ╰── found end of input expected something else
 ───╯

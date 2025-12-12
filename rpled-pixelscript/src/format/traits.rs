@@ -8,6 +8,16 @@ use super::{Formatter, FormatOptions};
 pub trait AstFormat {
     /// Format the inner content of this node
     fn format_into(&self, formatter: &mut Formatter);
+    fn compact_format(&self) -> String {
+        let mut formatter = Formatter::new(FormatOptions::compact());
+        self.format_into(&mut formatter);
+        formatter.into_string()
+    }
+    fn compact_plain_format(&self) -> String {
+        let mut formatter = Formatter::new(FormatOptions::compact().with_color(false));
+        self.format_into(&mut formatter);
+        formatter.into_string()
+    }
 }
 
 /// Wrapper trait that adds the `NodeName:[...]` wrapper to AST nodes

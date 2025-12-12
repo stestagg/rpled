@@ -9,10 +9,10 @@ fn test_parse_literal_number() {
     let result = Expression::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Expression::Constant(Constant::Num(n)) = result.unwrap() {
+    if let Expression::Constant(Constant::Num(n)) = result.clone().unwrap() {
         assert_eq!(n, 42);
     } else {
-        panic!("Expected literal number");
+        panic!("Expected literal number, got: {:?}", result);
     }
 }
 
@@ -164,6 +164,36 @@ fn test_parse_unary_not() {
         assert_eq!(op, "not");
     } else {
         panic!("Expected unary not");
+    }
+}
+
+#[test]
+fn test_parse_binop() {
+    let source = "1 + 2";
+    let result = Expression::parser().parse(source).into_result();
+    assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
+
+    if let Expression::BinaryOp { left, op, right, .. } = result.unwrap() {
+        assert_eq!(op, "+");
+        assert_eq!(*left, Expression::Constant(Constant::Num(1)));
+        assert_eq!(*right, Expression::Constant(Constant::Num(2)));
+    } else {
+        panic!("Expected binary op");
+    }
+}
+
+#[test]
+fn test_parse_binop_mult() {
+    let source = "5 * 10";
+    let result = Expression::parser().parse(source).into_result();
+    assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
+
+    if let Expression::BinaryOp { left, op, right, .. } = result.unwrap() {
+        assert_eq!(op, "*");
+        assert_eq!(*left, Expression::Constant(Constant::Num(5)));
+        assert_eq!(*right, Expression::Constant(Constant::Num(10)));
+    } else {
+        panic!("Expected binary op");
     }
 }
 

@@ -22,10 +22,9 @@ pub fn name_parser<'a>() -> impl Parser<'a, &'a str, String, Extra<'a>> + Clone 
 
 pub fn assignment_parser<'a>() -> impl Parser<'a, &'a str, (bool, String, Expression), Extra<'a>> + Clone {
     just("local").or_not().map(|v| v.is_some())
-        .then_ignore(inline_whitespace())
-        .then(name_parser())
+        .then(name_parser().inlinepad())
         .then_ignore(just('=').inlinepad())
-        .then(Expression::parser())
+        .then(Expression::parser().inlinepad())
         .map(|((is_local, name), expr)| (is_local, name, expr))
         .labelled("assignment")
 }
@@ -33,7 +32,7 @@ pub fn assignment_parser<'a>() -> impl Parser<'a, &'a str, (bool, String, Expres
 pub fn call_parser<'a, T>(arg: impl Parser<'a, &'a str, T, Extra<'a>> + Clone) -> impl Parser<'a, &'a str, (String, Vec<T>), Extra<'a>> + Clone {
     name_parser()
     .then(arg
-        .separated_by(just(','))
+        .separated_by(just(',').inlinepad())
         .collect::<Vec<_>>()
         .delimited_by(just('('), just(')'))
     )

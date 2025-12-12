@@ -1,3 +1,4 @@
+mod block_tests;
 mod expr_tests;
 mod stmt_tests;
 mod program_tests;

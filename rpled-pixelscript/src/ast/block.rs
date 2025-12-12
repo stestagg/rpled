@@ -8,27 +8,40 @@ pub struct Block {
 parser!(for: Block, recursing: statement: Statement {
     let returnstat = just("return").inlinepad()
         .then(Expression::parser().or_not())
+        .labelled("return statement")
         .map(|(_, expr)| Statement::Return { expr });
 
-    statement
-        .separated_by(one_of(";\n").inlinepad())
-        .collect::<Vec<_>>()
-        .map(|statements| {
+    choice((
+        statement
+            .separated_by(lineend().then(inline_whitespace()).repeated())
+            .at_least(1)
+            .collect::<Vec<_>>()
+            .map(|statements| {
+                println!("Parsed block with {} statements: {:?}", statements.len(), statements);
+                Block {
+                    statements
+                }
+            }).then(
+                lineend().inlinepad().repeated().at_least(1)
+                .ignore_then(returnstat.clone().map(|ret| {  
+                    println!("Parsed return statement in block: {:?}", ret);
+                    ret
+                }))
+                .or_not()
+            )
+            .map(|(mut block, ret)| {
+                if let Some(ret_stmt) = ret {
+                    block.statements.push(ret_stmt);
+                }
+                block
+            }),
+        returnstat.padded().map(|ret_stmt| {
+            println!("Parsed block with only return statement: {:?}", ret_stmt);
             Block {
-                statements
+                statements: vec![ret_stmt]
             }
-        })
-        .then(
-            one_of(";\n").inlinepad()
-            .ignore_then(returnstat)
-            .or_not()
-        )
-        .map(|(mut block, ret)| {
-            if let Some(ret_stmt) = ret {
-                block.statements.push(ret_stmt);
-            }
-            block
-        })
+        }),
+    ))
 });
 
 // Formatting implementation

@@ -50,7 +50,7 @@ fn test_parse_program_with_function() {
             local x = t * 10
     "#};
 
-    let result = Program::parser().parse(source);
+    let _result = Program::parser().parse(source);
     // This test may fail depending on how function blocks work
 }
 
@@ -66,7 +66,7 @@ fn test_parse_program_with_loops() {
         while x < 100 x = x * 2
     "#};
 
-    let result = Program::parser().parse(source);
+    let _result = Program::parser().parse(source);
     // This test may fail depending on how loop blocks work
 }
 
@@ -88,6 +88,6 @@ fn test_parse_complex_program() {
             end
     "#};
 
-    let result = Program::parser().parse(source);
+    let _result = Program::parser().parse(source);
     // This test may fail and need adjustment based on the actual parser capabilities
 }

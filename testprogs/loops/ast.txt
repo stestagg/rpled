@@ -1,15 +1,108 @@
-Program {
-  Meta[pixelscript] = {
-    name = "loops",
-    fps = 30,
-  },
-  Block = {
-    sum = 0
-    for i = 1, 10 do {
-      sum = sum + i
-    } end
-    while sum < 100 {
-      sum = sum * 2
-    }
-  }
-}
+Program:[
+    metadata: MetadataBlock:[
+        MetadataTable:[
+            {fps: MetadataValue:[
+                Constant:[
+                    Num: 30
+                ]
+            ],
+            name: MetadataValue:[
+                Constant:[
+                    String: "loops"
+                ]
+            ]}
+        ]
+    ]
+    block: Block:[
+        {Statement:[
+            assign: [
+                sum
+                Expression:[
+                    Constant:[
+                        Num: 0
+                    ]
+                ]
+            ]
+        ],
+        Statement:[
+            assign: [
+                sum
+                Expression:[
+                    Constant:[
+                        Num: 2
+                    ]
+                ]
+            ]
+        ],
+        Statement:[
+            for-num: [
+                var: i
+                start: Expression:[
+                    Constant:[
+                        Num: 1
+                    ]
+                ]
+                end: Expression:[
+                    Constant:[
+                        Num: 10
+                    ]
+                ]
+                block: Block:[
+                    {Statement:[
+                        assign: [
+                            sum
+                            Expression:[
+                                BinaryOp: [
+                                    Expression:[
+                                        Variable: sum
+                                    ]
+                                    +
+                                    Expression:[
+                                        Variable: i
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]}
+                ]
+            ]
+        ],
+        Statement:[
+            while: [
+                condition: Expression:[
+                    BinaryOp: [
+                        Expression:[
+                            Variable: sum
+                        ]
+                        <
+                        Expression:[
+                            Constant:[
+                                Num: 100
+                            ]
+                        ]
+                    ]
+                ]
+                block: Block:[
+                    {Statement:[
+                        assign: [
+                            sum
+                            Expression:[
+                                BinaryOp: [
+                                    Expression:[
+                                        Variable: sum
+                                    ]
+                                    *
+                                    Expression:[
+                                        Constant:[
+                                            Num: 2
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]}
+                ]
+            ]
+        ]}
+    ]
+]

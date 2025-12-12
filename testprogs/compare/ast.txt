@@ -13,13 +13,13 @@ Program:[
             assign: [
                 x
                 Expression:[
-                    binop: [
+                    BinaryOp: [
                         Expression:[
-                            var: foo
+                            Variable: foo
                         ]
                         <
                         Expression:[
-                            var: bar
+                            Variable: bar
                         ]
                     ]
                 ]
@@ -29,13 +29,13 @@ Program:[
             assign: [
                 y
                 Expression:[
-                    binop: [
+                    BinaryOp: [
                         Expression:[
-                            var: baz
+                            Variable: baz
                         ]
                         >=
                         Expression:[
-                            var: qux
+                            Variable: qux
                         ]
                     ]
                 ]
