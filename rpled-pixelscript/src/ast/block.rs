@@ -17,14 +17,12 @@ parser!(for: Block, recursing: statement: Statement {
             .at_least(1)
             .collect::<Vec<_>>()
             .map(|statements| {
-                println!("Parsed block with {} statements: {:?}", statements.len(), statements);
                 Block {
                     statements
                 }
             }).then(
                 lineend().inlinepad().repeated().at_least(1)
                 .ignore_then(returnstat.clone().map(|ret| {  
-                    println!("Parsed return statement in block: {:?}", ret);
                     ret
                 }))
                 .or_not()
@@ -36,7 +34,6 @@ parser!(for: Block, recursing: statement: Statement {
                 block
             }),
         returnstat.padded().map(|ret_stmt| {
-            println!("Parsed block with only return statement: {:?}", ret_stmt);
             Block {
                 statements: vec![ret_stmt]
             }
