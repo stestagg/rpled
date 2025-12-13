@@ -14,6 +14,7 @@ parser!(for: Block, recursing: statement: Statement {
     choice((
         statement
             .separated_by(lineend().then(inline_whitespace()).repeated())
+            .allow_leading()
             .at_least(1)
             .collect::<Vec<_>>()
             .map(|statements| {
@@ -22,10 +23,11 @@ parser!(for: Block, recursing: statement: Statement {
                 }
             }).then(
                 lineend().inlinepad().repeated().at_least(1)
-                .ignore_then(returnstat.clone().map(|ret| {  
+                .ignore_then(returnstat.clone().map(|ret| {
                     ret
                 }))
                 .or_not()
+                .then_ignore(lineend().inlinepad().repeated())
             )
             .map(|(mut block, ret)| {
                 if let Some(ret_stmt) = ret {
@@ -37,6 +39,9 @@ parser!(for: Block, recursing: statement: Statement {
             Block {
                 statements: vec![ret_stmt]
             }
+        }),
+        whitespace().to(Block {
+            statements: vec![]
         }),
     ))
 });

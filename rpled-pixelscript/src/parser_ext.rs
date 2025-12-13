@@ -57,7 +57,7 @@ where
     E: chumsky::extra::ParserExtra<'a, I>,
     E::Error: LabelError<'a, I, TextExpected<'a, I>>,
 {
-    comment().or_not().ignored().then_ignore(just('\n'))
+    comment().or_not().ignored().then_ignore(just('\r').or_not()).then_ignore(just('\n'))
     .or(
         just(';').ignore_then(comment().or_not().ignored()).then_ignore(text::whitespace())
     )

@@ -1,10 +1,46 @@
-Program {
-  Meta[pixelscript] = {
-    name = "simple",
-    version = 1,
-  },
-  Block = {
-    x = 42
-    y = x + 10
-  }
-}
+Program:[
+    metadata: MetadataBlock:[
+        MetadataTable:[
+            {name: MetadataValue:[
+                Constant:[
+                    String: "simple"
+                ]
+            ],
+            version: MetadataValue:[
+                Constant:[
+                    Num: 1
+                ]
+            ]}
+        ]
+    ]
+    block: Block:[
+        {Statement:[
+            assign: [
+                x
+                Expression:[
+                    Constant:[
+                        Num: 42
+                    ]
+                ]
+            ]
+        ],
+        Statement:[
+            assign: [
+                y
+                Expression:[
+                    BinaryOp: [
+                        Expression:[
+                            Variable: x
+                        ]
+                        +
+                        Expression:[
+                            Constant:[
+                                Num: 10
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]}
+    ]
+]

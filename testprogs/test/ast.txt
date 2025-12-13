@@ -1,7 +1,7 @@
 Error: Parse error
-   ╭─[testprogs/test/script.pxl:8:10]
+   ╭─[testprogs/test/script.pxl:7:1]
    │
- 8 │     for k, v in pairs({1, 2, 3}) do
-   │          ┬  
-   │          ╰── found end of input expected something else
+ 7 │ function main()
+   │ ┬  
+   │ ╰── found 'f' expected whitespace, Block, or end of input
 ───╯

@@ -16,7 +16,7 @@ pub fn format_errors(
                 Label::new((file_path, e.span().into_range()))
                     .with_message(e.reason().to_string())
             );
-            let context = e.contexts().map(|(c, s)| c.to_string()).collect::<Vec<_>>().join("\n");
+            let context = e.contexts().map(|(c, _s)| c.to_string()).collect::<Vec<_>>().join("\n");
             if !context.is_empty() {
                 builder = builder.with_note(context);
             }

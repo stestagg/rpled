@@ -38,8 +38,3 @@ pub fn call_parser<'a, T>(arg: impl Parser<'a, &'a str, T, Extra<'a>> + Clone) -
     )
     .labelled("function call")
 }
-
-pub fn parse_program<'a>(src: &'a str) -> ParseResult<Program, Rich<'a, char>>
-{
-    Program::parser().parse(src)
-}

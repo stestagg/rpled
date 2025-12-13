@@ -1,11 +1,9 @@
 use clap::Parser;
 use std::path::PathBuf;
 
-mod parser;
-mod script;
-
-use parser::ParsedProgram;
-use script::ParsedScript;
+use rpled_pixelscript::parse_program;
+use rpled_pixelscript::error::format_errors;
+use rpled_pixelscript::format::AstFormat as _;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -87,41 +85,45 @@ fn main() {
         );
     }
 
-    // Validate memory size
-    if ![4, 8, 16].contains(&args.memory_size) {
-        log::error!("Invalid memory size: {}KB. Must be 4, 8, or 16.", args.memory_size);
-        std::process::exit(1);
-    }
 
     log::info!("Target VM memory size: {}KB", args.memory_size);
     log::info!("Dump bytecode: {}", args.dump);
 
     // Parse the pixelscript file
-    let program = match ParsedProgram::from_file(&args.input) {
+    let program = match parse_program(&std::fs::read_to_string(&args.input).unwrap()).into_result() {
         Ok(p) => p,
         Err(e) => {
-            log::error!("Failed to parse pixelscript file: {:#}", e);
+            format_errors(
+                &std::fs::read_to_string(&args.input).unwrap(),
+                &args.input.to_string_lossy(),
+                e,
+            );
             std::process::exit(1);
         }
     };
 
     // If dump-ast is set, output the AST and exit
     if args.dump_ast {
-        println!("{:#?}", program.program);
+        let mut formatter = rpled_pixelscript::format::Formatter::new(
+            rpled_pixelscript::format::FormatOptions::new(2)
+        );
+        program.format_into(&mut formatter);
+        println!("{}", formatter.into_string());
         std::process::exit(0);
     }
+    todo!("Draw the rest of the owl");
 
-    // Extract pixelscript metadata
-    let script = match ParsedScript::from_program(program) {
-        Ok(s) => s,
-        Err(e) => {
-            log::error!("Failed to extract metadata: {:#}", e);
-            std::process::exit(1);
-        }
-    };
+    // // Extract pixelscript metadata
+    // let script = match ParsedScript::from_program(program) {
+    //     Ok(s) => s,
+    //     Err(e) => {
+    //         log::error!("Failed to extract metadata: {:#}", e);
+    //         std::process::exit(1);
+    //     }
+    // };
 
-    log::info!("Successfully processed pixelscript '{}'", script.header.name);
+    // log::info!("Successfully processed pixelscript '{}'", script.header.name);
 
-    // TODO: Implement compilation to bytecode
-    log::warn!("Bytecode generation not yet implemented");
+    // // TODO: Implement compilation to bytecode
+    // log::warn!("Bytecode generation not yet implemented");
 }

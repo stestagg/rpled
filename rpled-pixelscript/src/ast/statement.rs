@@ -136,8 +136,9 @@ pub enum Statement {
     IfStmt {if_part: ConditionalBranch, else_if_part: Vec<ConditionalBranch>, else_part: Option<Box<Block>>},
     ForIn {name: String, iter: String, block: Box<Block>},
     ForNum {name: String, start: Expression, end: Expression, step: Option<Expression>, block: Box<Block>},
-    FunctionDef {name: String, params: Vec<String>, block: Box<Block>, local: bool}, 
+    FunctionDef {name: String, params: Vec<String>, block: Box<Block>, local: bool},
     Return { expr: Option<Expression> },
+    Break,
     Comment { text: String },
 }
 
@@ -149,6 +150,7 @@ parser!(for: Statement {
                 .map(|(local, name, value)| Statement::Assignment { target: name, value, local }),
             call_parser(Expression::parser())
                 .map(|(name, args)| Statement::FunctionCall { name, args }),
+            just("break").labelled("break").to(Statement::Break),
             just("do").inlinepad()
                 .ignore_then(Block::parser_with_statement(statement.clone()).boxed())
                 .then_ignore(whitespace())
@@ -314,6 +316,9 @@ impl AstFormat for Statement {
                         expr.format_with_name(f);
                     });
                 }
+            }
+            Statement::Break => {
+                f.write("break".cyan());
             }
             Statement::Comment { text } => {
                 f.write("comment".cyan());

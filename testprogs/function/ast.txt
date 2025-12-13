@@ -1,17 +1,57 @@
-Program {
-  Meta[pixelscript] = {
-    name = "function_test",
-  },
-  Block = {
-    function add(
-      a,
-      b
-    ){
-      return a + b
-    }
-    result = add(
-      5,
-      10
-    )
-  }
-}
+Program:[
+    metadata: MetadataBlock:[
+        MetadataTable:[
+            {name: MetadataValue:[
+                Constant:[
+                    String: "function_test"
+                ]
+            ]}
+        ]
+    ]
+    block: Block:[
+        {Statement:[
+            function: [
+                name: add
+                params: {a,
+                b}
+                block: Block:[
+                    {Statement:[
+                        [
+                            Expression:[
+                                BinaryOp: [
+                                    Expression:[
+                                        Variable: a
+                                    ]
+                                    +
+                                    Expression:[
+                                        Variable: b
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]}
+                ]
+            ]
+        ],
+        Statement:[
+            assign: [
+                result
+                Expression:[
+                    FunctionCall: [
+                        add
+                        {Expression:[
+                            Constant:[
+                                Num: 5
+                            ]
+                        ],
+                        Expression:[
+                            Constant:[
+                                Num: 10
+                            ]
+                        ]}
+                    ]
+                ]
+            ]
+        ]}
+    ]
+]

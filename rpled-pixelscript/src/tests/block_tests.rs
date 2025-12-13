@@ -9,11 +9,8 @@ fn test_parse_empty_block() {
     let result = Block::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Block { statements } = result.unwrap() {
-        assert_eq!(statements.len(), 0);
-    } else {
-        panic!("Expected empty block");
-    }
+    let Block { statements } = result.unwrap();
+    assert_eq!(statements.len(), 0);
 }
 
 #[test]
@@ -22,15 +19,12 @@ fn test_parse_single_statement() {
     let result = Block::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Block { statements } = result.unwrap() {
-        assert_eq!(statements.len(), 1);
-        if let Statement::Assignment { target, .. } = &statements[0] {
-            assert_eq!(target, "x");
-        } else {
-            panic!("Expected assignment statement");
-        }
+    let Block { statements } = result.unwrap();
+    assert_eq!(statements.len(), 1);
+    if let Statement::Assignment { target, .. } = &statements[0] {
+        assert_eq!(target, "x");
     } else {
-        panic!("Expected block");
+        panic!("Expected assignment statement");
     }
 }
 
@@ -42,11 +36,8 @@ z = x + y"#;
     let result = Block::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Block { statements } = result.unwrap() {
-        assert_eq!(statements.len(), 3);
-    } else {
-        panic!("Expected block with 3 statements");
-    }
+    let Block { statements } = result.unwrap();
+    assert_eq!(statements.len(), 3);
 }
 
 #[test]
@@ -56,12 +47,9 @@ return x"#;
     let result = Block::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Block { statements } = result.unwrap() {
-        assert_eq!(statements.len(), 2);
-        matches!(statements[1], Statement::Return { .. });
-    } else {
-        panic!("Expected block with return statement");
-    }
+    let Block { statements } = result.unwrap();
+    assert_eq!(statements.len(), 2);
+    matches!(statements[1], Statement::Return { .. });
 }
 
 #[test]
@@ -70,12 +58,9 @@ fn test_parse_block_with_return_only() {
     let result = Block::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Block { statements } = result.unwrap() {
-        assert_eq!(statements.len(), 1);
-        matches!(statements[0], Statement::Return { .. });
-    } else {
-        panic!("Expected block with single return statement");
-    }
+    let Block { statements } = result.unwrap();
+    assert_eq!(statements.len(), 1);
+    matches!(statements[0], Statement::Return { .. });
 }
 
 #[test]
@@ -85,15 +70,12 @@ return"#;
     let result = Block::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Block { statements } = result.unwrap() {
-        assert_eq!(statements.len(), 2);
-        if let Statement::Return { expr } = &statements[1] {
-            assert!(expr.is_none());
-        } else {
-            panic!("Expected return statement");
-        }
+    let Block { statements } = result.unwrap();
+    assert_eq!(statements.len(), 2);
+    if let Statement::Return { expr } = &statements[1] {
+        assert!(expr.is_none());
     } else {
-        panic!("Expected block with empty return");
+        panic!("Expected return statement");
     }
 }
 
@@ -105,12 +87,9 @@ baz(x)"#;
     let result = Block::parser().parse(source).into_result();
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
-    if let Block { statements } = result.unwrap() {
-        assert_eq!(statements.len(), 3);
-        for stmt in statements {
-            matches!(stmt, Statement::FunctionCall { .. });
-        }
-    } else {
-        panic!("Expected block with function calls");
+    let Block { statements } = result.unwrap();
+    assert_eq!(statements.len(), 3);
+    for stmt in statements {
+        matches!(stmt, Statement::FunctionCall { .. });
     }
 }

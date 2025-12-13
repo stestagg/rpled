@@ -1,42 +1,233 @@
-Program {
-  Meta[pixelscript] = {
-    name = "comprehensive",
-    version = 2,
-    modules = {
-      "LED",
-      "TIME",
-    },
-    config = {
-      fps = 60,
-      brightness = 128,
-    },
-  },
-  Block = {
-    local count = 0
-    local result
-    function lerp(
-      a,
-      b,
-      t
-    ){
-      return a + (
-        b - a
-      ) * t
-    }
-    for i = 1, 10, 2 do {
-      count = count + i
-    } end
-    if count > 20 then {
-      result = lerp(
-        0,
-        255,
-        count / 100
-      )
-    } elseif count > 10 then {
-      result = 128
-    } else {
-      result = 0
-    } end
-    return result
-  }
-}
+Program:[
+    metadata: MetadataBlock:[
+        MetadataTable:[
+            {config: MetadataValue:[
+                MetadataTable:[
+                    {brightness: MetadataValue:[
+                        Constant:[
+                            Num: 128
+                        ]
+                    ],
+                    fps: MetadataValue:[
+                        Constant:[
+                            Num: 60
+                        ]
+                    ]}
+                ]
+            ],
+            modules: MetadataValue:[
+                list: {Constant:[
+                    String: "LED"
+                ],
+                Constant:[
+                    String: "TIME"
+                ]}
+            ],
+            name: MetadataValue:[
+                Constant:[
+                    String: "comprehensive"
+                ]
+            ],
+            version: MetadataValue:[
+                Constant:[
+                    Num: 2
+                ]
+            ]}
+        ]
+    ]
+    block: Block:[
+        {Statement:[
+            assign: [
+                local
+                count
+                Expression:[
+                    Constant:[
+                        Num: 0
+                    ]
+                ]
+            ]
+        ],
+        Statement:[
+            local: [
+                result
+            ]
+        ],
+        Statement:[
+            function: [
+                name: lerp
+                params: {a,
+                b,
+                t}
+                block: Block:[
+                    {Statement:[
+                        [
+                            Expression:[
+                                BinaryOp: [
+                                    Expression:[
+                                        Variable: a
+                                    ]
+                                    +
+                                    Expression:[
+                                        BinaryOp: [
+                                            Expression:[
+                                                BinaryOp: [
+                                                    Expression:[
+                                                        Variable: b
+                                                    ]
+                                                    -
+                                                    Expression:[
+                                                        Variable: a
+                                                    ]
+                                                ]
+                                            ]
+                                            *
+                                            Expression:[
+                                                Variable: t
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]}
+                ]
+            ]
+        ],
+        Statement:[
+            for-num: [
+                var: i
+                start: Expression:[
+                    Constant:[
+                        Num: 1
+                    ]
+                ]
+                end: Expression:[
+                    Constant:[
+                        Num: 10
+                    ]
+                ]
+                step: Expression:[
+                    Constant:[
+                        Num: 2
+                    ]
+                ]
+                block: Block:[
+                    {Statement:[
+                        assign: [
+                            count
+                            Expression:[
+                                BinaryOp: [
+                                    Expression:[
+                                        Variable: count
+                                    ]
+                                    +
+                                    Expression:[
+                                        Variable: i
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]}
+                ]
+            ]
+        ],
+        Statement:[
+            if: [
+                condition: Expression:[
+                    BinaryOp: [
+                        Expression:[
+                            Variable: count
+                        ]
+                        >
+                        Expression:[
+                            Constant:[
+                                Num: 20
+                            ]
+                        ]
+                    ]
+                ]
+                then: Block:[
+                    {Statement:[
+                        assign: [
+                            result
+                            Expression:[
+                                FunctionCall: [
+                                    lerp
+                                    {Expression:[
+                                        Constant:[
+                                            Num: 0
+                                        ]
+                                    ],
+                                    Expression:[
+                                        Constant:[
+                                            Num: 255
+                                        ]
+                                    ],
+                                    Expression:[
+                                        BinaryOp: [
+                                            Expression:[
+                                                Variable: count
+                                            ]
+                                            /
+                                            Expression:[
+                                                Constant:[
+                                                    Num: 100
+                                                ]
+                                            ]
+                                        ]
+                                    ]}
+                                ]
+                            ]
+                        ]
+                    ]}
+                ]
+                elseif: {[
+                    condition: Expression:[
+                        BinaryOp: [
+                            Expression:[
+                                Variable: count
+                            ]
+                            >
+                            Expression:[
+                                Constant:[
+                                    Num: 10
+                                ]
+                            ]
+                        ]
+                    ]
+                    then: Block:[
+                        {Statement:[
+                            assign: [
+                                result
+                                Expression:[
+                                    Constant:[
+                                        Num: 128
+                                    ]
+                                ]
+                            ]
+                        ]}
+                    ]
+                ]}
+                else: Block:[
+                    {Statement:[
+                        assign: [
+                            result
+                            Expression:[
+                                Constant:[
+                                    Num: 0
+                                ]
+                            ]
+                        ]
+                    ]}
+                ]
+            ]
+        ],
+        Statement:[
+            [
+                Expression:[
+                    Variable: result
+                ]
+            ]
+        ]}
+    ]
+]
