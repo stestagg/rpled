@@ -1,19 +1,6 @@
 Program:[
     metadata: MetadataBlock:[
-        MetadataTable:[
-            {name: MetadataValue:[
-                Constant:[
-                    String: "funccall"
-                ]
-            ]}
-        ]
+        MetadataTable:[{name: MetadataValue:[Constant:"funccall"]}]
     ]
-    block: Block:[
-        {Statement:[
-            call: [
-                led.foo
-                {}
-            ]
-        ]}
-    ]
+    block: Block:[{Statement:[call: [led.foo {}]]}]
 ]

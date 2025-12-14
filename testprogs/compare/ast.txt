@@ -1,12 +1,6 @@
 Program:[
     metadata: MetadataBlock:[
-        MetadataTable:[
-            {name: MetadataValue:[
-                Constant:[
-                    String: "simple comparison"
-                ]
-            ]}
-        ]
+        MetadataTable:[{name: MetadataValue:[Constant:"simple comparison"]}]
     ]
     block: Block:[
         {Statement:[
@@ -14,13 +8,9 @@ Program:[
                 x
                 Expression:[
                     BinaryOp: [
-                        Expression:[
-                            Variable: foo
-                        ]
+                        Expression:[Variable: foo]
                         <
-                        Expression:[
-                            Variable: bar
-                        ]
+                        Expression:[Variable: bar]
                     ]
                 ]
             ]
@@ -30,13 +20,9 @@ Program:[
                 y
                 Expression:[
                     BinaryOp: [
-                        Expression:[
-                            Variable: baz
-                        ]
+                        Expression:[Variable: baz]
                         >=
-                        Expression:[
-                            Variable: qux
-                        ]
+                        Expression:[Variable: qux]
                     ]
                 ]
             ]

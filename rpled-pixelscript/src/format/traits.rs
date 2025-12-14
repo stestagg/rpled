@@ -28,14 +28,22 @@ pub trait AstFormat {
 pub trait AstFormatWithName: AstFormat {
     /// The name of this AST node type (e.g., "Statement", "Expression", "Constant")
     const NODE_NAME: &'static str;
+    const WRAP_CONTENT: bool = true;
 
     /// Format this node with its name wrapper: `NodeName:[inner_content]`
     fn format_with_name(&self, formatter: &mut Formatter) {
         formatter.write(Self::NODE_NAME.blue().bold());
         formatter.write(":".blue());
-        formatter.nested(|f| {
-            self.format_into(f);
-        });
+
+        if Self::WRAP_CONTENT {
+            formatter.nested(|f| {
+                self.format_into(f);
+            });
+        } else {
+            formatter.nested_unwrapped(|f| {
+                self.format_into(f);
+            });
+        }
     }
 
     /// Convenience method to format this node to a string

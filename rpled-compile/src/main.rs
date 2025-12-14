@@ -30,15 +30,11 @@ struct Args {
     #[arg(short, long)]
     quiet: bool,
 
-    /// Print the compiled bytecode in human-readable format
-    #[arg(long)]
-    dump: bool,
-
     /// Dump the AST after parsing and exit
     #[arg(long)]
     dump_ast: bool,
 
-    /// Target VM memory size in KB (4, 8, or 16)
+    /// Target VM memory size in KB
     #[arg(long, value_name = "KB", default_value = "8")]
     memory_size: u16,
 }
@@ -85,9 +81,7 @@ fn main() {
         );
     }
 
-
     log::info!("Target VM memory size: {}KB", args.memory_size);
-    log::info!("Dump bytecode: {}", args.dump);
 
     // Parse the pixelscript file
     let program = match parse_program(&std::fs::read_to_string(&args.input).unwrap()).into_result() {
@@ -111,7 +105,8 @@ fn main() {
         println!("{}", formatter.into_string());
         std::process::exit(0);
     }
-    todo!("Draw the rest of the owl");
+    
+    
 
     // // Extract pixelscript metadata
     // let script = match ParsedScript::from_program(program) {

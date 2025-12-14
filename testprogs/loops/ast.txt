@@ -1,65 +1,27 @@
 Program:[
     metadata: MetadataBlock:[
         MetadataTable:[
-            {fps: MetadataValue:[
-                Constant:[
-                    Num: 30
-                ]
-            ],
-            name: MetadataValue:[
-                Constant:[
-                    String: "loops"
-                ]
-            ]}
+            {fps: MetadataValue:[Constant:30],
+            name: MetadataValue:[Constant:"loops"]}
         ]
     ]
     block: Block:[
-        {Statement:[
-            assign: [
-                sum
-                Expression:[
-                    Constant:[
-                        Num: 0
-                    ]
-                ]
-            ]
-        ],
-        Statement:[
-            assign: [
-                sum
-                Expression:[
-                    Constant:[
-                        Num: 2
-                    ]
-                ]
-            ]
-        ],
+        {Statement:[assign: [sum Expression:[Constant:0]]],
+        Statement:[assign: [sum Expression:[Constant:2]]],
         Statement:[
             for-num: [
                 var: i
-                start: Expression:[
-                    Constant:[
-                        Num: 1
-                    ]
-                ]
-                end: Expression:[
-                    Constant:[
-                        Num: 10
-                    ]
-                ]
+                start: Expression:[Constant:1]
+                end: Expression:[Constant:10]
                 block: Block:[
                     {Statement:[
                         assign: [
                             sum
                             Expression:[
                                 BinaryOp: [
-                                    Expression:[
-                                        Variable: sum
-                                    ]
+                                    Expression:[Variable: sum]
                                     +
-                                    Expression:[
-                                        Variable: i
-                                    ]
+                                    Expression:[Variable: i]
                                 ]
                             ]
                         ]
@@ -71,15 +33,9 @@ Program:[
             while: [
                 condition: Expression:[
                     BinaryOp: [
-                        Expression:[
-                            Variable: sum
-                        ]
+                        Expression:[Variable: sum]
                         <
-                        Expression:[
-                            Constant:[
-                                Num: 100
-                            ]
-                        ]
+                        Expression:[Constant:100]
                     ]
                 ]
                 block: Block:[
@@ -88,15 +44,9 @@ Program:[
                             sum
                             Expression:[
                                 BinaryOp: [
-                                    Expression:[
-                                        Variable: sum
-                                    ]
+                                    Expression:[Variable: sum]
                                     *
-                                    Expression:[
-                                        Constant:[
-                                            Num: 2
-                                        ]
-                                    ]
+                                    Expression:[Constant:2]
                                 ]
                             ]
                         ]

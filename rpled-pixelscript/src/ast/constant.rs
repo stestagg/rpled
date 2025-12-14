@@ -97,9 +97,9 @@ parser!(for: Constant {
 impl AstFormat for Constant {
     fn format_into(&self, f: &mut Formatter) {
         match self {
-            Constant::Num(n) => f.write_tagged("Num", n),
-            Constant::Float(x) => f.write_tagged("Float", x),
-            Constant::String(s) => f.write_tagged("String", format!("\"{}\"", s)),
+            Constant::Num(n) => f.write(format!("{}", n).yellow()),
+            Constant::Float(x) => f.write(format!("{:?}", x).yellow()),
+            Constant::String(s) => f.write(format!("\"{}\"", s).yellow()),
             Constant::True => f.write("true".yellow()),
             Constant::False => f.write("false".yellow()),
             Constant::Nil => f.write("nil".yellow()),
@@ -109,4 +109,5 @@ impl AstFormat for Constant {
 
 impl AstFormatWithName for Constant {
     const NODE_NAME: &'static str = "Constant";
+    const WRAP_CONTENT: bool = false;
 }

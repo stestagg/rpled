@@ -1,43 +1,20 @@
 Program:[
     metadata: MetadataBlock:[
         MetadataTable:[
-            {name: MetadataValue:[
-                Constant:[
-                    String: "simple"
-                ]
-            ],
-            version: MetadataValue:[
-                Constant:[
-                    Num: 1
-                ]
-            ]}
+            {name: MetadataValue:[Constant:"simple"],
+            version: MetadataValue:[Constant:1]}
         ]
     ]
     block: Block:[
-        {Statement:[
-            assign: [
-                x
-                Expression:[
-                    Constant:[
-                        Num: 42
-                    ]
-                ]
-            ]
-        ],
+        {Statement:[assign: [x Expression:[Constant:42]]],
         Statement:[
             assign: [
                 y
                 Expression:[
                     BinaryOp: [
-                        Expression:[
-                            Variable: x
-                        ]
+                        Expression:[Variable: x]
                         +
-                        Expression:[
-                            Constant:[
-                                Num: 10
-                            ]
-                        ]
+                        Expression:[Constant:10]
                     ]
                 ]
             ]

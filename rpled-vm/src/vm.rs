@@ -375,7 +375,7 @@ mod tests {
 
     #[rstest]
     #[tokio::test]
-    async fn test_fixtures(#[files("../testprogs/*.pxs.txt")] path: PathBuf) {
+    async fn test_fixtures(#[files("../testprogs/*/script.pxl")] path: PathBuf) {
         let fixture_data = std::fs::read_to_string(&path).unwrap();
         let parsed = parse_fixture_with_output(&fixture_data);
 

@@ -1,12 +1,6 @@
 Program:[
     metadata: MetadataBlock:[
-        MetadataTable:[
-            {name: MetadataValue:[
-                Constant:[
-                    String: "function_test"
-                ]
-            ]}
-        ]
+        MetadataTable:[{name: MetadataValue:[Constant:"function_test"]}]
     ]
     block: Block:[
         {Statement:[
@@ -19,13 +13,9 @@ Program:[
                         [
                             Expression:[
                                 BinaryOp: [
-                                    Expression:[
-                                        Variable: a
-                                    ]
+                                    Expression:[Variable: a]
                                     +
-                                    Expression:[
-                                        Variable: b
-                                    ]
+                                    Expression:[Variable: b]
                                 ]
                             ]
                         ]
@@ -39,16 +29,8 @@ Program:[
                 Expression:[
                     FunctionCall: [
                         add
-                        {Expression:[
-                            Constant:[
-                                Num: 5
-                            ]
-                        ],
-                        Expression:[
-                            Constant:[
-                                Num: 10
-                            ]
-                        ]}
+                        {Expression:[Constant:5],
+                        Expression:[Constant:10]}
                     ]
                 ]
             ]

@@ -85,7 +85,7 @@ Commands use the following notation:
 Where:
  - `u8` = 8-bit unsigned integer constant
  - `i16` = 16-bit signed integer constant
-   `a` = 16-bit constant unsigned address in entire memory space
+   `a` = 16-bit constant unsigned address in heap space
  - `addr` = 16-bit signed integer, relative address offset in program space (relative to the next instruction: PC + 1)
  - `c` = 8-bit Module function code
 Comment conventions:

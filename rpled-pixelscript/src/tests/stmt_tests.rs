@@ -132,7 +132,7 @@ fn test_if_complex_cond() {
     assert!(result.is_ok(), "Parse errors: {:?}", result.as_ref().err());
 
     if let Statement::IfStmt { if_part, .. } = result.unwrap() {
-        assert_eq!(if_part.condition.compact_plain_format(), "BinaryOp: [Expression:[BinaryOp: [Expression:[Variable: i] % Expression:[Constant:[Num: 15]]]] == Expression:[Constant:[Num: 0]]]");
+        assert_eq!(if_part.condition.compact_plain_format(), "BinaryOp: [Expression:[BinaryOp: [Expression:[Variable: i] % Expression:[Constant:15]]] == Expression:[Constant:0]]");
     } else {
         panic!("Expected if-else statement");
     }

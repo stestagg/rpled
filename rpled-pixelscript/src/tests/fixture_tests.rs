@@ -29,7 +29,7 @@ fn test_fixture(#[files("../testprogs/*/script.pxl")] script_path: PathBuf) {
     let actual_output = match result {
         Ok(program) => {
             // Successfully parsed - format the AST with 2-space indent
-            program.format(FormatOptions::new(2).with_color(false))
+            program.format(FormatOptions::new(4).with_color(false))
         }
         Err(errs) => {
             // Parse error - format using ariadne

@@ -10,6 +10,8 @@ embassy-sync = { version = "*", optional = true }
 tokio = { version = "1.39.0", features = ["full"], optional = true }
 paste = "1.0.15"
 regex = { version = "1.11.1", optional = true }
+strum = { version = "0.26", features = ["derive"] }
+ops_derive = { path = "../ops_derive" }
 
 [dev-dependencies]
 regex = "*"

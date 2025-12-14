@@ -3,55 +3,18 @@ Program:[
         MetadataTable:[
             {config: MetadataValue:[
                 MetadataTable:[
-                    {brightness: MetadataValue:[
-                        Constant:[
-                            Num: 128
-                        ]
-                    ],
-                    fps: MetadataValue:[
-                        Constant:[
-                            Num: 60
-                        ]
-                    ]}
+                    {brightness: MetadataValue:[Constant:128],
+                    fps: MetadataValue:[Constant:60]}
                 ]
             ],
-            modules: MetadataValue:[
-                list: {Constant:[
-                    String: "LED"
-                ],
-                Constant:[
-                    String: "TIME"
-                ]}
-            ],
-            name: MetadataValue:[
-                Constant:[
-                    String: "comprehensive"
-                ]
-            ],
-            version: MetadataValue:[
-                Constant:[
-                    Num: 2
-                ]
-            ]}
+            modules: MetadataValue:[list: {Constant:"LED", Constant:"TIME"}],
+            name: MetadataValue:[Constant:"comprehensive"],
+            version: MetadataValue:[Constant:2]}
         ]
     ]
     block: Block:[
-        {Statement:[
-            assign: [
-                local
-                count
-                Expression:[
-                    Constant:[
-                        Num: 0
-                    ]
-                ]
-            ]
-        ],
-        Statement:[
-            local: [
-                result
-            ]
-        ],
+        {Statement:[assign: [local count Expression:[Constant:0]]],
+        Statement:[local: [result]],
         Statement:[
             function: [
                 name: lerp
@@ -63,27 +26,19 @@ Program:[
                         [
                             Expression:[
                                 BinaryOp: [
-                                    Expression:[
-                                        Variable: a
-                                    ]
+                                    Expression:[Variable: a]
                                     +
                                     Expression:[
                                         BinaryOp: [
                                             Expression:[
                                                 BinaryOp: [
-                                                    Expression:[
-                                                        Variable: b
-                                                    ]
+                                                    Expression:[Variable: b]
                                                     -
-                                                    Expression:[
-                                                        Variable: a
-                                                    ]
+                                                    Expression:[Variable: a]
                                                 ]
                                             ]
                                             *
-                                            Expression:[
-                                                Variable: t
-                                            ]
+                                            Expression:[Variable: t]
                                         ]
                                     ]
                                 ]
@@ -96,34 +51,18 @@ Program:[
         Statement:[
             for-num: [
                 var: i
-                start: Expression:[
-                    Constant:[
-                        Num: 1
-                    ]
-                ]
-                end: Expression:[
-                    Constant:[
-                        Num: 10
-                    ]
-                ]
-                step: Expression:[
-                    Constant:[
-                        Num: 2
-                    ]
-                ]
+                start: Expression:[Constant:1]
+                end: Expression:[Constant:10]
+                step: Expression:[Constant:2]
                 block: Block:[
                     {Statement:[
                         assign: [
                             count
                             Expression:[
                                 BinaryOp: [
-                                    Expression:[
-                                        Variable: count
-                                    ]
+                                    Expression:[Variable: count]
                                     +
-                                    Expression:[
-                                        Variable: i
-                                    ]
+                                    Expression:[Variable: i]
                                 ]
                             ]
                         ]
@@ -135,15 +74,9 @@ Program:[
             if: [
                 condition: Expression:[
                     BinaryOp: [
-                        Expression:[
-                            Variable: count
-                        ]
+                        Expression:[Variable: count]
                         >
-                        Expression:[
-                            Constant:[
-                                Num: 20
-                            ]
-                        ]
+                        Expression:[Constant:20]
                     ]
                 ]
                 then: Block:[
@@ -153,27 +86,13 @@ Program:[
                             Expression:[
                                 FunctionCall: [
                                     lerp
-                                    {Expression:[
-                                        Constant:[
-                                            Num: 0
-                                        ]
-                                    ],
-                                    Expression:[
-                                        Constant:[
-                                            Num: 255
-                                        ]
-                                    ],
+                                    {Expression:[Constant:0],
+                                    Expression:[Constant:255],
                                     Expression:[
                                         BinaryOp: [
-                                            Expression:[
-                                                Variable: count
-                                            ]
+                                            Expression:[Variable: count]
                                             /
-                                            Expression:[
-                                                Constant:[
-                                                    Num: 100
-                                                ]
-                                            ]
+                                            Expression:[Constant:100]
                                         ]
                                     ]}
                                 ]
@@ -184,50 +103,20 @@ Program:[
                 elseif: {[
                     condition: Expression:[
                         BinaryOp: [
-                            Expression:[
-                                Variable: count
-                            ]
+                            Expression:[Variable: count]
                             >
-                            Expression:[
-                                Constant:[
-                                    Num: 10
-                                ]
-                            ]
+                            Expression:[Constant:10]
                         ]
                     ]
                     then: Block:[
-                        {Statement:[
-                            assign: [
-                                result
-                                Expression:[
-                                    Constant:[
-                                        Num: 128
-                                    ]
-                                ]
-                            ]
-                        ]}
+                        {Statement:[assign: [result Expression:[Constant:128]]]}
                     ]
                 ]}
                 else: Block:[
-                    {Statement:[
-                        assign: [
-                            result
-                            Expression:[
-                                Constant:[
-                                    Num: 0
-                                ]
-                            ]
-                        ]
-                    ]}
+                    {Statement:[assign: [result Expression:[Constant:0]]]}
                 ]
             ]
         ],
-        Statement:[
-            [
-                Expression:[
-                    Variable: result
-                ]
-            ]
-        ]}
+        Statement:[[Expression:[Variable: result]]]}
     ]
 ]

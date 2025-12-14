@@ -1,62 +1,19 @@
 Program:[
     metadata: MetadataBlock:[
         MetadataTable:[
-            {name: MetadataValue:[
-                Constant:[
-                    String: "fizzbuzz"
-                ]
-            ],
-            version: MetadataValue:[
-                Constant:[
-                    Num: 1
-                ]
-            ]}
+            {name: MetadataValue:[Constant:"fizzbuzz"],
+            version: MetadataValue:[Constant:1]}
         ]
     ]
     block: Block:[
-        {Statement:[
-            assign: [
-                fizz_count
-                Expression:[
-                    Constant:[
-                        Num: 0
-                    ]
-                ]
-            ]
-        ],
-        Statement:[
-            assign: [
-                buzz_count
-                Expression:[
-                    Constant:[
-                        Num: 0
-                    ]
-                ]
-            ]
-        ],
-        Statement:[
-            assign: [
-                fizzbuzz_count
-                Expression:[
-                    Constant:[
-                        Num: 0
-                    ]
-                ]
-            ]
-        ],
+        {Statement:[assign: [fizz_count Expression:[Constant:0]]],
+        Statement:[assign: [buzz_count Expression:[Constant:0]]],
+        Statement:[assign: [fizzbuzz_count Expression:[Constant:0]]],
         Statement:[
             for-num: [
                 var: i
-                start: Expression:[
-                    Constant:[
-                        Num: 1
-                    ]
-                ]
-                end: Expression:[
-                    Constant:[
-                        Num: 30
-                    ]
-                ]
+                start: Expression:[Constant:1]
+                end: Expression:[Constant:30]
                 block: Block:[
                     {Statement:[
                         if: [
@@ -64,23 +21,13 @@ Program:[
                                 BinaryOp: [
                                     Expression:[
                                         BinaryOp: [
-                                            Expression:[
-                                                Variable: i
-                                            ]
+                                            Expression:[Variable: i]
                                             %
-                                            Expression:[
-                                                Constant:[
-                                                    Num: 15
-                                                ]
-                                            ]
+                                            Expression:[Constant:15]
                                         ]
                                     ]
                                     ==
-                                    Expression:[
-                                        Constant:[
-                                            Num: 0
-                                        ]
-                                    ]
+                                    Expression:[Constant:0]
                                 ]
                             ]
                             then: Block:[
@@ -93,11 +40,7 @@ Program:[
                                                     Variable: fizzbuzz_count
                                                 ]
                                                 +
-                                                Expression:[
-                                                    Constant:[
-                                                        Num: 1
-                                                    ]
-                                                ]
+                                                Expression:[Constant:1]
                                             ]
                                         ]
                                     ]
@@ -108,23 +51,13 @@ Program:[
                                     BinaryOp: [
                                         Expression:[
                                             BinaryOp: [
-                                                Expression:[
-                                                    Variable: i
-                                                ]
+                                                Expression:[Variable: i]
                                                 %
-                                                Expression:[
-                                                    Constant:[
-                                                        Num: 3
-                                                    ]
-                                                ]
+                                                Expression:[Constant:3]
                                             ]
                                         ]
                                         ==
-                                        Expression:[
-                                            Constant:[
-                                                Num: 0
-                                            ]
-                                        ]
+                                        Expression:[Constant:0]
                                     ]
                                 ]
                                 then: Block:[
@@ -137,11 +70,7 @@ Program:[
                                                         Variable: fizz_count
                                                     ]
                                                     +
-                                                    Expression:[
-                                                        Constant:[
-                                                            Num: 1
-                                                        ]
-                                                    ]
+                                                    Expression:[Constant:1]
                                                 ]
                                             ]
                                         ]
@@ -153,23 +82,13 @@ Program:[
                                     BinaryOp: [
                                         Expression:[
                                             BinaryOp: [
-                                                Expression:[
-                                                    Variable: i
-                                                ]
+                                                Expression:[Variable: i]
                                                 %
-                                                Expression:[
-                                                    Constant:[
-                                                        Num: 5
-                                                    ]
-                                                ]
+                                                Expression:[Constant:5]
                                             ]
                                         ]
                                         ==
-                                        Expression:[
-                                            Constant:[
-                                                Num: 0
-                                            ]
-                                        ]
+                                        Expression:[Constant:0]
                                     ]
                                 ]
                                 then: Block:[
@@ -182,11 +101,7 @@ Program:[
                                                         Variable: buzz_count
                                                     ]
                                                     +
-                                                    Expression:[
-                                                        Constant:[
-                                                            Num: 1
-                                                        ]
-                                                    ]
+                                                    Expression:[Constant:1]
                                                 ]
                                             ]
                                         ]

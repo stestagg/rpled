@@ -3,43 +3,13 @@ Program:[
         MetadataTable:[
             {colors: MetadataValue:[
                 MetadataTable:[
-                    {bg: MetadataValue:[
-                        Constant:[
-                            Num: 0
-                        ]
-                    ],
-                    fg: MetadataValue:[
-                        Constant:[
-                            Num: 255
-                        ]
-                    ]}
+                    {bg: MetadataValue:[Constant:0],
+                    fg: MetadataValue:[Constant:255]}
                 ]
             ],
-            name: MetadataValue:[
-                Constant:[
-                    String: "complex"
-                ]
-            ],
-            resolution: MetadataValue:[
-                list: {Constant:[
-                    Num: 800
-                ],
-                Constant:[
-                    Num: 600
-                ]}
-            ]}
+            name: MetadataValue:[Constant:"complex"],
+            resolution: MetadataValue:[list: {Constant:800, Constant:600}]}
         ]
     ]
-    block: Block:[
-        {Statement:[
-            assign: [
-                x
-                Expression:[
-                    Constant:[
-                        Num: 1
-                    ]
-                ]
-            ]
-        ]}
-    ]
+    block: Block:[{Statement:[assign: [x Expression:[Constant:1]]]}]
 ]
