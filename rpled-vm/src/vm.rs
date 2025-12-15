@@ -1,5 +1,4 @@
 use bytemuck::{NoUninit, Pod, bytes_of, pod_read_unaligned};
-use paste::paste;
 
 use crate::modules::{self, Modules};
 use crate::ops;
@@ -45,81 +44,7 @@ pub enum HaltReason {
     ProgramEnd,
 }
 
-macro_rules! dispatch_op {
-    (
-        $( $num:literal $defn:tt),+,
-    ) => {
-        // Generate the run_op method
-        pub async fn run_op(&mut self) -> Result<()> {
-            let pc = self.pc;
-            let opcode: u8 = self.read_pc()?;
-            match opcode {
-                $(
-                    $num => dispatch_op!(@call $defn, self, opcode)
-                ),*
-                ,
-                _ => return Err(VMError::InvalidOpcode(opcode, pc)),
-            }
-            Ok(())
-        }
-
-        // Generate the static opcode names method
-        pub fn opcode_names() -> &'static [(u8, &'static str)] {
-            &[
-                $(
-                    dispatch_op!(@name $defn, $num)
-                ),+
-            ]
-        }
-    };
-
-    (@call {#[cfg($cfg:meta)]$rest:tt}, $vm:expr, $opcode:ident) => {
-        {
-            #[cfg($cfg)]
-            dispatch_op!(@call $rest, $vm, $opcode);
-
-            #[cfg(not($cfg))]
-            {
-                return Err(VMError::ModuleNotEnabled($opcode));
-            }
-        }
-    };
-
-    (@call {$name:ident => $path:path}, $vm:expr, $opcode:ident) => {
-        $path($vm)?
-    };
-
-    (@call {MOD $name:ident $method:ident $var:literal}, $vm:expr, $opcode:ident) => {
-        {
-            let mod_op = $vm.read_pc()?;
-            modules::$name::$method::<N, S, D>($vm, mod_op).await?
-        }
-    };
-
-    (@call {async $name:ident => $path:path}, $vm:expr, $opcod:ident) => {
-        $path($vm).await?
-    };
-
-    (@name {#[cfg($cfg:meta)]$rest:tt}, $opcode:literal) => {
-        #[cfg($cfg)]
-        dispatch_op!(@name $rest, $opcode)
-    };
-
-    (@name {$name:ident => $path:path}, $opcode:literal) => {
-        ($opcode, stringify!($name))
-    };
-
-    (@name {MOD $name:ident $method:ident $var:literal}, $opcode:literal) => {
-        paste!{
-            ($opcode, stringify!([<$name:upper $var>]))
-        }
-    };
-
-    (@name {async $name:ident => $path:path}, $opcode:literal) => {
-        ($opcode, stringify!($name))
-    };
-
-}
+// dispatch_op! macro has been replaced by generated Ops::run_op() method
 
 pub trait VmDebug {
     fn will_run_op(&self) -> impl core::future::Future<Output = ()> + Send;
@@ -153,63 +78,11 @@ pub async fn make_vm<const N: usize, S: Sync>() -> VM<N, S, NoVmDebug> {
 }
 
 impl<const N: usize, S: Sync, D: VmDebug> VM<N, S, D> {
-    // Generate run_op and opcode_names methods using the dispatch_op macro
-    dispatch_op!(
-        1 {PUSH => ops::stack::push},
-        2 {LOAD => ops::stack::load},
-        3 {STORE => ops::stack::store},
-        4 {POP => ops::stack::pop},
-        5 {POPN => ops::stack::popn},
-        6 {DUP => ops::stack::dup},
-        7 {SWAP => ops::stack::swap},
-        8 {OVER => ops::stack::over},
-        9 {ROT => ops::stack::rot},
-        10 {ZERO => ops::stack::zero},
-
-        11 {ADD => ops::math::add},
-        12 {SUB => ops::math::sub},
-        13 {MUL => ops::math::mul},
-        14 {DIV => ops::math::div},
-        15 {MOD => ops::math::modulo},
-
-        16 {EQ => ops::compare::eq},
-        17 {NE => ops::compare::ne},
-        18 {LT => ops::compare::lt},
-        19 {GT => ops::compare::gt},
-        20 {LE => ops::compare::le},
-        21 {GE => ops::compare::ge},
-
-        22 {AND => ops::bitwise::and},
-        23 {OR => ops::bitwise::or},
-        24 {XOR => ops::bitwise::xor},
-        25 {NOT => ops::bitwise::not},
-
-        26 {INC => ops::math::inc},
-        27 {DEC => ops::math::dec},
-        28 {NEG => ops::math::neg},
-        29 {ABS => ops::math::abs},
-        30 {CLAMP => ops::math::clamp},
-        31 {JMP => ops::control::jmp},
-        32 {JZ => ops::control::jz},
-        33 {JNZ => ops::control::jnz},
-        34 {CALL => ops::control::call},
-        35 {CALLZ => ops::control::callz},
-        36 {CALLNZ => ops::control::callnz},
-        37 {RET => ops::control::ret},
-        38 {HALT => ops::control::halt},
-        39 { async SLEEP => ops::control::sleep},
-
-        60 {#[cfg(test)]{MOD test call0 0 }},
-        61 {#[cfg(test)]{MOD test call1 1 }},
-        62 {#[cfg(test)]{MOD test call2 2 }},
-        63 {#[cfg(test)]{MOD test calln "N" }},
-
-        64 {#[cfg(feature = "led")]{MOD led call0 0 }},
-        65 {#[cfg(feature = "led")]{MOD led call1 1 }},
-        66 {#[cfg(feature = "led")]{MOD led call2 2 }},
-        67 {#[cfg(feature = "led")]{MOD led calln "N" }},
-
-    );
+    // Use the generated Ops::run_op method
+    pub async fn run_op(&mut self) -> Result<()> {
+        let opcode: u8 = self.read_pc()?;
+        ops::Ops::run_op(opcode, self).await
+    }
 
     pub async fn new(debug: D) -> Self {
         VM {

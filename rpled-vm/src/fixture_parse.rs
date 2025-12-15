@@ -208,10 +208,13 @@ fn num_line_to_vec(line: &str) -> Vec<u8> {
 }
 
 fn opcode_by_name<S: Sync>(name: &str) -> Option<u8> {
-    let opcodes = VM::<0, S, NoVmDebug>::opcode_names();
-    for (code, op_name) in opcodes.iter() {
-        if *op_name == name {
-            return Some(*code);
+    use strum::FromRepr;
+    // Try all possible opcode values (0-255), not ideal, but ...
+    for code in 0u8..=255 {
+        if let Some(op) = crate::ops::Ops::from_repr(code) {
+            if op.to_string().eq_ignore_ascii_case(name) {
+                return Some(code);
+            }
         }
     }
     None

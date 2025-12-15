@@ -11,25 +11,22 @@ fn do_jmp<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, addr: i16) 
     Ok(())
 }
 
-pub fn jmp<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: i16 = vm.read_pc()?;
-    do_jmp(vm, addr)
+pub fn jmp<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, offset: i16) -> Result<()> {
+    do_jmp(vm, offset)
 }
 
-pub fn jz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: i16 = vm.read_pc()?;
+pub fn jz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, offset: i16) -> Result<()> {
     let cond: i16 = vm.stack_pop()?;
     if cond == 0 {
-        do_jmp(vm, addr)?;
+        do_jmp(vm, offset)?;
     }
     Ok(())
 }
 
-pub fn jnz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: i16 = vm.read_pc()?;
+pub fn jnz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, offset: i16) -> Result<()> {
     let cond: i16 = vm.stack_pop()?;
     if cond != 0 {
-        do_jmp(vm, addr)?;
+        do_jmp(vm, offset)?;
     }
     Ok(())
 }
@@ -40,24 +37,21 @@ fn do_call<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, addr: i16)
     do_jmp(vm, addr)
 }
 
-pub fn call<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: i16 = vm.read_pc()?;
-    do_call(vm, addr)
+pub fn call<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, offset: i16, _frame_entries: u8) -> Result<()> {
+    do_call(vm, offset)
 }
 
-pub fn callz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: i16 = vm.read_pc()?;
+pub fn callz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, offset: i16, _frame_entries: u8) -> Result<()> {
     let cond: i16 = vm.stack_pop()?;
     if cond == 0 {
-        do_call(vm, addr)?;
+        do_call(vm, offset)?;
     }
     Ok(())
 }
-pub fn callnz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: i16 = vm.read_pc()?;
+pub fn callnz<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, offset: i16, _frame_entries: u8) -> Result<()> {
     let cond: i16 = vm.stack_pop()?;
     if cond != 0 {
-        do_call(vm, addr)?;
+        do_call(vm, offset)?;
     }
     Ok(())
 }

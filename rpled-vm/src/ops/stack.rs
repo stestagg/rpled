@@ -4,21 +4,18 @@ use bytemuck::{cast_mut, from_bytes_mut};
 use crate::sync::Sync;
 use crate::vm::{Result, VM, VMError, VmDebug};
 
-pub fn push<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let value: u16 = vm.read_pc()?;
+pub fn push<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, value: u16) -> Result<()> {
     vm.stack_push(value)
 }
 
-pub fn load<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: u16 = vm.read_pc()?;
-    let value: u16 = vm.read_heap(addr as usize)?;
+pub fn load<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, heap_addr: u16) -> Result<()> {
+    let value: u16 = vm.read_heap(heap_addr as usize)?;
     vm.stack_push(value)
 }
 
-pub fn store<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let addr: u16 = vm.read_pc()?;
+pub fn store<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, heap_addr: u16) -> Result<()> {
     let stack_value: u16 = vm.stack_pop()?;
-    vm.write_heap(addr as usize, stack_value)
+    vm.write_heap(heap_addr as usize, stack_value)
 }
 
 pub fn pop<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
@@ -26,8 +23,7 @@ pub fn pop<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<
     Ok(())
 }
 
-pub fn popn<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
-    let count: u8 = vm.read_pc()?;
+pub fn popn<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, count: u8) -> Result<()> {
     let new_sp = vm
         .sp
         .checked_add(count as usize)
@@ -74,4 +70,16 @@ pub fn rot<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<
 
 pub fn zero<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>) -> Result<()> {
     vm.stack_push(0)
+}
+
+pub fn load_frame<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, frame_addr: u16) -> Result<()> {
+    // TODO: Implement frame loading
+    let value: u16 = vm.read_heap(frame_addr as usize)?;
+    vm.stack_push(value)
+}
+
+pub fn store_frame<const N: usize, S: Sync, D: VmDebug>(vm: &mut VM<N, S, D>, frame_addr: u16) -> Result<()> {
+    // TODO: Implement frame storing
+    let stack_value: u16 = vm.stack_pop()?;
+    vm.write_heap(frame_addr as usize, stack_value)
 }
