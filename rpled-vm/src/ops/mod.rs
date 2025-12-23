@@ -12,7 +12,7 @@ use crate::vm::{Result, VM, VmDebug};
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Display, FromRepr, DecodeOps)]
-pub enum Ops {
+pub enum Op {
     // Stack operations
     #[handler(crate::ops::stack::push)]
     Push { value: u16 } = 1,

@@ -44,8 +44,6 @@ pub enum HaltReason {
     ProgramEnd,
 }
 
-// dispatch_op! macro has been replaced by generated Ops::run_op() method
-
 pub trait VmDebug {
     fn will_run_op(&self) -> impl core::future::Future<Output = ()> + Send;
     fn did_run_op(&self) -> impl core::future::Future<Output = ()> + Send;

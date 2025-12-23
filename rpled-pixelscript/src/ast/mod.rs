@@ -74,3 +74,12 @@ pub(crate) mod prelude {
     pub use crate::format::{AstFormat, AstFormatWithName, Formatter};
     pub use yansi::Paint;
 }
+
+pub mod nodes {
+    pub use super::constant::Constant;
+    pub use super::metadata::MetadataBlock;
+    pub use super::program::Program;
+    pub use super::statement::Statement;
+    pub use super::expr::Expression;
+    pub use super::block::Block;
+}
