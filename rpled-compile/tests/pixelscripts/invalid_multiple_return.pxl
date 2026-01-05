@@ -1,0 +1,13 @@
+pixelscript = {
+    name = "InvalidReturn",
+    modules = {"LED"},
+    entrypoint = "main"
+}
+
+function get_values()
+    return 1, 2, 3
+end
+
+function main()
+    led.clear()
+end

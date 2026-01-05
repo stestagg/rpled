@@ -1,0 +1,12 @@
+pixelscript = {
+    name = "InvalidClosure",
+    modules = {"LED"},
+    entrypoint = "main"
+}
+
+function main()
+    function inner()
+        led.clear()
+    end
+    inner()
+end

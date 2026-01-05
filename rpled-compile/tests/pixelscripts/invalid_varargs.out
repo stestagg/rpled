@@ -1,0 +1,4 @@
+Successfully parsed pixelscript
+Found pixelscript: name='InvalidVarargs', modules=["LED"], entrypoint='main'
+Failed to convert to pixelscript: Unsupported Lua features detected:
+  - Variable argument functions (...) are not supported

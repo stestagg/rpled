@@ -1,0 +1,3 @@
+Successfully parsed pixelscript
+Failed to convert to pixelscript: Unsupported Lua features detected:
+  - Generic for loops (for k,v in ...) are not supported

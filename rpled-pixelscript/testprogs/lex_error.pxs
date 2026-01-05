@@ -1,0 +1,6 @@
+pixelscript = {
+    name = "unterminated string
+}
+
+=== OUTPUT ===
+LEX ERROR

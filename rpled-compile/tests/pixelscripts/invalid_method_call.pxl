@@ -1,0 +1,9 @@
+pixelscript = {
+    name = "InvalidMethod",
+    modules = {"LED"},
+    entrypoint = "main"
+}
+
+function main()
+    led:clear()
+end

@@ -1,0 +1,11 @@
+pixelscript = {
+    name = "InvalidFor",
+    modules = {"LED"},
+    entrypoint = "main"
+}
+
+function main()
+    for k, v in pairs({1, 2, 3}) do
+        led.clear()
+    end
+end

@@ -1,0 +1,11 @@
+[package]
+name = "rpled-debug"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.21", features = ["derive"] }
+crossterm = "0.28.1"
+ratatui = { version = "0.28.1", default-features = false, features = ["crossterm"] }
+rpled-vm = { path = "../rpled-vm", default-features = false, features = ["std", "tokio"] }
+tokio = { version = "1.39.0", features = ["full"] }

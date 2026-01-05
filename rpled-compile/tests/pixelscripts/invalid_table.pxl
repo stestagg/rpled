@@ -1,0 +1,10 @@
+pixelscript = {
+    name = "InvalidTable",
+    modules = {"LED"},
+    entrypoint = "main"
+}
+
+function main()
+    local my_table = {1, 2, 3}
+    led.clear()
+end

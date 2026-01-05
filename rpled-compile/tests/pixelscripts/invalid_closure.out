@@ -1,0 +1,4 @@
+Successfully parsed pixelscript
+Found pixelscript: name='InvalidClosure', modules=["LED"], entrypoint='main'
+Failed to convert to pixelscript: Unsupported Lua features detected:
+  - Nested function declarations (closures) are not supported

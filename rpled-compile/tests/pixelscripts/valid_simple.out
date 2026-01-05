@@ -1,0 +1,4 @@
+Successfully parsed pixelscript
+Found pixelscript: name='Simple', modules=["LED"], entrypoint='main'
+Lua feature check passed
+Successfully processed pixelscript 'Simple'
